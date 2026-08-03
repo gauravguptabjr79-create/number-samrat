@@ -1,108 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Samrat - Official Android App</title>
+    <title>नंबर सम्राट - ऑफिशियल एंड्रॉइड ऐप डाउनलोड</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0d0d0d;
+            background-color: #0b090a;
             color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             text-align: center;
         }
         .container {
             max-width: 500px;
-            margin: 40px auto;
-            padding: 25px;
-            background: #1a1a1a;
-            border-radius: 15px;
-            box-shadow: 0px 0px 25px #f39c12;
-            border: 1px solid #f39c12;
+            margin: 0 auto;
+            padding: 30px 20px;
         }
-        .logo {
-            font-size: 34px;
+        .logo-box {
+            background: linear-gradient(145deg, #1e1b1c, #141213);
+            border: 2px solid #ffb703;
+            border-radius: 20px;
+            padding: 20px;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0px 4px 20px rgba(255, 183, 3, 0.3);
+        }
+        .logo-text {
+            font-size: 32px;
             font-weight: bold;
-            color: #f39c12;
-            margin-bottom: 5px;
+            color: #ffb703;
+            margin: 0;
+            letter-spacing: 1px;
         }
         .tagline {
+            color: #aaa;
             font-size: 16px;
-            color: #cccccc;
-            margin-bottom: 25px;
+            margin-top: 15px;
         }
-        .btn-download {
-            display: inline-block;
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: #fff;
-            font-size: 22px;
-            font-weight: bold;
-            padding: 16px 45px;
-            text-decoration: none;
-            border-radius: 35px;
-            box-shadow: 0px 5px 20px rgba(243, 156, 18, 0.5);
-            transition: 0.3s;
-            margin-bottom: 25px;
-        }
-        .btn-download:hover {
-            transform: scale(1.05);
-            box-shadow: 0px 5px 30px rgba(243, 156, 18, 0.7);
-        }
-        .features {
+        .features-card {
+            background: #161415;
+            border: 1px solid #2d2a2b;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
             text-align: left;
-            margin-top: 25px;
-            padding: 15px;
-            background: #262626;
-            border-radius: 10px;
         }
-        .features h3 {
-            color: #f39c12;
-            margin-top: 0;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
+        .feature-item {
+            margin: 12px 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
         }
-        .features ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
+        .feature-item span {
+            color: #00f5d4;
+            font-weight: bold;
+            margin-right: 10px;
         }
-        .features li {
-            padding: 10px 0;
-            border-bottom: 1px solid #333;
-            font-size: 15px;
+        /* डाउनलोड और वीआईपी बटन्स */
+        .btn {
+            width: 100%;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 16px;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0px 5px 25px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            margin-bottom: 15px;
         }
-        .features li:last-child {
-            border-bottom: none;
+        .download-btn {
+            background: linear-gradient(90deg, #ffb703, #fb8500);
+            color: #000000;
         }
-        .features li::before {
-            content: "🔥 ";
+        .vip-btn {
+            background: linear-gradient(90deg, #d90429, #ef233c);
+            color: #ffffff;
+        }
+        .btn:hover {
+            transform: scale(1.03);
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #555;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="logo">👑 NUMBER SAMRAT</div>
-        <div class="tagline">Official Android Application</div>
-        
-        <p style="font-size: 18px; color: #2ecc71; font-weight: bold; margin-bottom: 25px;">⚡ 100% Safe & Fast Download ⚡</p>
-        
-        <!-- Connected with Google AI Studio Link -->
-        <a href="https://ai.studio" class="btn-download">📲 DOWNLOAD APP</a>
-        
-        <div class="features">
-            <h3>App Key Features:</h3>
-            <ul>
-                <li>Faridabad, Ghaziabad, Gali, Disawar Fastest Results</li>
-                <li>119+ Live Markets Real-Time Data</li>
-                <li>Auto Live On - No Interruption Live Updates</li>
-                <li>Result Updater (Test) & Live Notification System</li>
-            </ul>
+        <!-- हेडर / लोगो -->
+        <div class="logo-box">
+            <p class="logo-text">👑 नंबर सम्राट</p>
         </div>
-        
-        <p style="font-size: 12px; color: #555; margin-top: 25px;">© 2026 Number Samrat. All Rights Reserved.</p>
+        <p class="tagline">सबसे तेज़ लाइव रिज़ल्ट्स और सुपर लीक जोड़ी ऐप</p>
+
+        <!-- ऐप के खास फीचर्स -->
+        <div class="features-card">
+            <div class="feature-item"><span>⚡</span> 100% सुपरफ़ास्ट लाइव रिज़ल्ट्स</div>
+            <div class="feature-item"><span>📊</span> सभी 119+ मार्केट्स एक ही जगह</div>
+            <div class="feature-item"><span>🔔</span> नंबर खुलते ही ऑटो-नोटिफ़िकेशन</div>
+            <div class="feature-item"><span>🔒</span> 100% सेफ और सिक्योर एंड्रॉइड ऐप</div>
+        </div>
+
+        <!-- मुख्य डाउनलोड बटन -->
+        <!-- ApkCreator ka redirection link jo bina link kharab kiye download karwayega -->
+        <a href="https://numbersamrat.online" class="btn download-btn" target="_blank" id="apkDownloadLink">
+            📥 ऑफिशियल ऐप डाउनलोड करें (.apk)
+        </a>
+
+        <!-- सुरक्षित वीआईपी बुकिंग बटन (Direct WhatsApp Payment Gateway) -->
+        <a href="https://wa.me." class="btn vip-btn" target="_blank" id="whatsappVipLink">
+            👑 ज्वाइन वीआईपी मेम्बरशिप (व्हाट्सएप)
+        </a>
+
+        <p class="footer-text">वर्ज़न: v1.0.4 (Latest) | केवल एंड्रॉइड फ़ोन्स के लिए</p>
     </div>
 
 </body>
