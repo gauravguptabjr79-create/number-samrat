@@ -119,33 +119,36 @@
         <a href="https://wa.me." class="btn vip-btn" target="_blank" id="whatsappVipLink">
             👑 ज्वाइन वीआईपी मेम्बरशिप (व्हाट्सएप)
         </a>
-       <!-- नंबर सम्राट सीधा रिचार्ज सेक्शन -->
+      Link <!-- नंबर सम्राट ऑटोमैटिक रिचार्ज सेक्शन -->
 <div style="text-align: center; margin: 25px 0; font-family: sans-serif;">
     <label style="display: block; font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #fff;">
-        रिचार्ज राशि चुनें (नंबर सम्राट)
+        💸 मनमुताबिक राशि रिचार्ज करें (नंबर सम्राट)
     </label>
     
-    <!-- सीधा पेमेंट बटन -->
-    <a href="https://zyphorapay.com" 
-       target="_blank" 
-       style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #28a745, #218838); color: white; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+    <!-- ऑटोमैटिक पेमेंट बटन -->
+    <button id="openZyphoraForm" 
+            style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; font-size: 16px; font-weight: bold; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); cursor: pointer;">
         💸 सुरक्षित रिचार्ज करें
-    </a>
+    </button>
 </div>
 
 <script>
-document.getElementById('dynamicPayBtn').addEventListener('click', function() {
-    const userAmount = document.getElementById('customAmount').value;
+document.getElementById('openZyphoraForm').addEventListener('click', function() {
+    // आपकी ज़ायफोरापे की असली पे-इन फॉर्म आईडी के साथ सुरक्षित यूआरएल
+    const targetLink = "https://zyphorapay.com";
     
-    if(!userAmount || userAmount < 10) {
-        alert("कृपया कम से कम ₹10 या उससे ज़्यादा की राशि डालें।");
-        return;
-    }
+    // सुरक्षित पॉपअप विंडो के लिए साइज सेट करना
+    const width = 450;
+    const height = 650;
+    const left = (window.innerWidth / 2) - (width / 2);
+    const top = (window.innerHeight / 2) - (height / 2);
     
-    // यह लिंक कस्टमर को बिना लॉगिन के सीधे यूपीआई और क्यूआर कोड पेमेंट पेज पर ले जाएगा
-    const paymentUrl = "https://zyphorapay.com" + userAmount;
-    
-    window.open(paymentUrl, '_blank');
+    // ब्राउज़र को यह बताना कि यह एक सुरक्षित मर्चेंट रिक्वेस्ट है
+    window.open(
+        targetLink, 
+        "ZyphoraPay", 
+        width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes
+    );
 });
 </script>
 
