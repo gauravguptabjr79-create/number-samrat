@@ -3,49 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Samrat - Khaiwal Login</title>
+    <title>Number Samrat - Khaiwal Portal</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
-        .logo { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #1e3799; }
-        .input-box { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; outline: none; }
-        .input-box:focus { border-color: #1e3799; }
-        .login-btn { width: 100%; padding: 12px; background: #1e3799; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .login-btn:hover { background: #0a1f73; }
-        .error-msg { color: #e74c3c; font-size: 14px; margin-top: 10px; display: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #f4f6f9; color: #333; }
+        
+        /* LOGIN CSS */
+        #loginPage { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .login-card h2 { color: #1e3799; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .login-btn { width: 100%; padding: 12px; background: #1e3799; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        /* DASHBOARD CSS (Shuru mein hidden rahega) */
+        #dashboardPage { display: none; }
+        .navbar { background: #1e3799; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
+        .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { padding: 20px; border-radius: 10px; color: white; text-align: center; }
+        .card-aaya { background: #2980b9; }
+        .card-dena { background: #c0392b; }
+        .card-bacha { background: #27ae60; transition: 0.5s; }
+        .card h3 { font-size: 14px; opacity: 0.9; }
+        .card h2 { font-size: 24px; margin-top: 10px; }
+
+        .table-section { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8f9fa; color: #555; }
+        .status-win { color: #c0392b; font-weight: bold; }
+        .status-loss { color: #27ae60; font-weight: bold; }
+        .status-pending { color: #f39c12; }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="logo">👑 Number Samrat</div>
-        <h3>Khaiwal Portal Login</h3>
-        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Apna hisab manage karne ke liye login karein</p>
-        
-        <form id="khaiwalLoginForm">
-            <input type="text" id="khaiwalId" class="input-box" placeholder="Khaiwal ID" required>
-            <input type="password" id="password" class="input-box" placeholder="Password" required>
-            <button type="submit" class="login-btn">Log In</button>
-            <div id="error" class="error-msg">Galat ID ya Password! Kripya check karein.</div>
-        </form>
+    <!-- 1. LOGIN PAGE -->
+    <div id="loginPage">
+        <div class="login-card">
+            <h2>👑 Number Samrat</h2>
+            <p>Khaiwal Portal Login</p>
+            <input type="text" id="kID" placeholder="Khaiwal ID">
+            <input type="password" id="kPass" placeholder="Password">
+            <button class="login-btn" onclick="checkLogin()">Log In</button>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD PAGE -->
+    <div id="dashboardPage">
+        <div class="navbar">
+            <div style="font-weight:bold; font-size:18px;">👑 Live Khaiwal Dashboard</div>
+            <button onclick="location.reload()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
+
+        <div class="container">
+            <!-- Wallet Section -->
+            <div class="wallet-grid">
+                <div class="card card-aaya">
+                    <h3>Kul Collection (Aaya)</h3>
+                    <h2 id="totalAaya">₹ 0</h2>
+                </div>
+                <div class="card card-dena">
+                    <h3>Kul Paying (Dena)</h3>
+                    <h2 id="totalDena">₹ 0</h2>
+                </div>
+                <div class="card card-bacha" id="profitCard">
+                    <h3>Net Bacha (Profit)</h3>
+                    <h2 id="netProfit">₹ 0</h2>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="table-section">
+                <h3 style="color:#1e3799;">📊 Real-time Bids (Bina Refresh)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Number</th>
+                            <th>Points</th>
+                            <th>Hisab / Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liveTableBody">
+                        <!-- Data will appear here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('khaiwalLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var id = document.getElementById('khaiwalId').value;
-            var pass = document.getElementById('password').value;
-            var errorDiv = document.getElementById('error');
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            databaseURL: "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            if(id === 'admin' && pass === 'admin123') {
-                errorDiv.style.display = 'none';
-                window.location.href = 'dashboard.html';
+        // --- LOGIN FUNCTION ---
+        function checkLogin() {
+            const id = document.getElementById('kID').value;
+            const pass = document.getElementById('kPass').value;
+
+            // Aap yahan apna pasandida ID/Password set karein
+            if (id === "samrat" && pass === "1234") {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboardPage').style.display = 'block';
+                startLiveUpdates(); // Login hote hi live data shuru
             } else {
-                errorDiv.style.display = 'block';
+                alert("Galat ID ya Password!");
             }
-        });
-    </script>
+        }
 
+        // --- REAL-TIME DATA LOGIC ---
+        function startLiveUpdates() {
+            db.ref('bids').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tbody = document.getElementById('liveTableBody');
+                
+                if (!data) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Koi bids nahi mili.</td></tr>';
+                    return;
+                }
+
+                let totalAaya = 0;
+                let totalDena = 0;
+                let html = '';
+
+                Object.keys(data).forEach(key => {
+                    const bid = data[key];
+                    const pts = Number(bid.points || 0);
+                    totalAaya += pts;
+
+                    let statusHtml = '';
+                    const status = (bid.status || 'pending').toLowerCase();
+
+                    if (status === 'win') {
+                        const winAmt = pts * 90;
+                        totalDena += winAmt;
+                        statusHtml = `<span class="status-win">Dena: ₹${winAmt}</span>`;
+                    } else if (status === 'loss') {
+                        statusHtml = `<span class="status-loss">Bacha: ₹${pts}</span>`;
+                    } else {
+                        statusHtml = `<span class="status-pending">Pending...</span>`;
+                    }
+
+                    html += `<tr>
+                        <td>${bid.username || 'User'}</td>
+                        <td><b>${bid.bidNumber || '-'}</b></td>
+                        <td>₹${pts}</td>
+                        <td>${statusHtml}</td>
+                    </tr>`;
+                });
+
+                // Update UI
+                tbody.innerHTML = html;
+                document.getElementById('totalAaya').innerText = '₹ ' + totalAaya.toLocaleString('en-IN');
+                document.getElementById('totalDena').innerText = '₹ ' + totalDena.toLocaleString('en-IN');
+                
+                const net = totalAaya - totalDena;
+                document.getElementById('netProfit').innerText = '₹ ' + net.toLocaleString('en-IN');
+                
+                // Color Change (Profit/Loss)
+                const card = document.getElementById('profitCard');
+                card.style.background = net >= 0 ? '#27ae60' : '#c0392b';
+            });
+        }
+    </script>
 </body>
 </html>
