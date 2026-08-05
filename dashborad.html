@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Samrat - Khaiwal Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: #f4f6f9; color: #333; }
+        
+        /* Top Navigation Bar */
+        .navbar { background: #1e3799; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: bold; }
+        .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
+        /* --- KHAIWAL WALLET SECTION --- */
+        .wallet-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .wallet-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #1e3799; display: flex; align-items: center; gap: 8px; }
+        
+        .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .card { padding: 20px; border-radius: 8px; color: white; }
+        
+        .card-total { background: #2980b9; } /* Total In Wallet */
+        .card-profit { background: #27ae60; } /* Net Profit */
+        .card-loss { background: #c0392b; } /* Total Payout/Loss */
+        
+        .card p { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+        .card h2 { font-size: 26px; font-weight: bold; }
+
+        /* --- LEDGER / HISAB TABLE --- */
+        .ledger-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .ledger-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333; }
+        
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 15px; }
+        th { background: #f8f9fa; color: #555; }
+        
+        .status-plus { color: #27ae60; font-weight: bold; }
+        .status-minus { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Menu Bar -->
+    <div class="navbar">
+        <div class="logo">👑 Number Samrat (Khaiwal Portal)</div>
+        <button class="logout-btn">Log Out</button>
+    </div>
+
+    <div class="container">
+        
+        <!-- 💰 Khaiwal Wallet Overview -->
+        <div class="wallet-section">
+            <div class="wallet-title">💰 Khaiwal Wallet Balance</div>
+            <div class="wallet-grid">
+                <div class="card card-total">
+                    <p>Total Collection (Aaya)</p>
+                    <h2>₹ 0.00</h2>
+                </div>
+                <div class="card card-profit">
+                    <p>Net Profit (Bacha)</p>
+                    <h2>₹ 0.00</h2>
+                </div>
+                <div class="card card-loss">
+                    <p>Total Paying (Dena)</p>
+                    <h2>₹ 0.00</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📊 Real-time Hisab-Kitab Ledger -->
+        <div class="ledger-section">
+            <div class="ledger-title">📊 Aaj Ka Hisab-Kitab (Live Ledger)</div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID / Name</th>
+                            <th>Total Bids</th>
+                            <th>Total Points</th>
+                            <th>Hisab Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Jab database judega tab yahan entries apne aap aayengi -->
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live data nahi hai. Database jodne par yahan dikhega.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
