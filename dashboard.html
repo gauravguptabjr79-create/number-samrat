@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Number Samrat - Live Khaiwal Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        /* CSS Same rakha hai bas thoda sa improvement kiya hai */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f4f6f9; color: #333; }
-        .navbar { background: #1e3799; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar { background: #1e3799; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 20px; font-weight: bold; }
         .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .wallet-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .wallet-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #1e3799; }
         .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .card { padding: 20px; border-radius: 8px; color: white; }
+        .card { padding: 20px; border-radius: 8px; color: white; transition: 0.3s; }
         .card-total { background: #2980b9; } 
         .card-profit { background: #27ae60; } 
         .card-loss { background: #c0392b; } 
@@ -34,46 +35,46 @@
 <body>
 
     <div class="navbar">
-        <div class="logo">👑 Number Samrat (Live Khaiwal Portal)</div>
-        <button class="logout-btn" onclick="window.location.href='khaiwal.html'">Log Out</button>
+        <div class="logo">👑 Number Samrat (Live Khaiwal)</div>
+        <button class="logout-btn" onclick="alert('Logging out...')">Log Out</button>
     </div>
 
     <div class="container">
         <!-- Live Wallet Cards -->
         <div class="wallet-section">
-            <div class="wallet-title">💰 Khaiwal Wallet Balance (Live Sync)</div>
+            <div class="wallet-title">💰 Khaiwal Wallet (Real-Time Update)</div>
             <div class="wallet-grid">
                 <div class="card card-total">
                     <p>Total Collection (Aaya)</p>
                     <h2 id="totalCollection">₹ 0.00</h2>
                 </div>
-                <div class="card card-profit">
-                    <p>Net Profit (Bacha)</p>
-                    <h2 id="netProfit">₹ 0.00</h2>
-                </div>
                 <div class="card card-loss">
                     <p>Total Paying (Dena)</p>
                     <h2 id="totalPaying">₹ 0.00</h2>
+                </div>
+                <div class="card card-profit" id="profitCardColor">
+                    <p>Net Profit/Loss</p>
+                    <h2 id="netProfit">₹ 0.00</h2>
                 </div>
             </div>
         </div>
 
         <!-- Live Table -->
         <div class="ledger-section">
-            <div class="ledger-title">📊 Aaj Ka Hisab-Kitab (Real-time Ledger)</div>
+            <div class="ledger-title">📊 Aaj Ka Hisab-Kitab</div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>User ID / Name</th>
-                            <th>Total Bids</th>
-                            <th>Total Points</th>
-                            <th>Hisab Status</th>
+                            <th>User Name</th>
+                            <th>Bid No.</th>
+                            <th>Points</th>
+                            <th>Status/Hisab</th>
                         </tr>
                     </thead>
                     <tbody id="ledgerBody">
                         <tr>
-                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Database se live data fetch ho raha hai...</td>
+                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Connecting to database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -82,22 +83,18 @@
     </div>
 
     <script>
-        // Sahi aur absolute genuine Singapore database link (Fixed Format)
-        const targetUrl = "https://firebasedatabase.app";
+        // IMPORTANT: Yahan apna sahi Firebase URL dalein jiske peeche .json ho
+        // Example: https://my-project.firebaseio.com/bets.json
+        const targetUrl = "https://YOUR-PROJECT-ID.firebaseio.com/data.json"; 
 
         function pullRealtimeRecords() {
             fetch(targetUrl)
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
+                .then(response => response.json())
+                .then(data => {
                     const ledgerBody = document.getElementById('ledgerBody');
                     
-                    if (!data) {
-                        ledgerBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>';
-                        document.getElementById('totalCollection').innerText = "₹ 0.00";
-                        document.getElementById('netProfit').innerText = "₹ 0.00";
-                        document.getElementById('totalPaying').innerText = "₹ 0.00";
+                    if (!data || Object.keys(data).length === 0) {
+                        ledgerBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi koi live entry nahi hai.</td></tr>';
                         return;
                     }
 
@@ -105,50 +102,56 @@
                     let payingTotal = 0;
                     let tableHTML = '';
 
-                    Object.keys(data).forEach(function(id) {
+                    // Firebase data object hota hai, isliye loop aise chalega
+                    Object.keys(data).forEach(id => {
                         const row = data[id];
-                        if (row) {
-                            const currentPoints = Number(row.points || 0);
-                            collectionTotal += currentPoints;
-                            
-                            let calcStatus = '';
-                            if (row.status === 'win') {
-                                const winPrize = currentPoints * 90;
-                                payingTotal += winPrize;
-                                calcStatus = '<span class="status-minus">- ₹ ' + winPrize + ' (Dena Hai)</span>';
-                            } else if (row.status === 'loss') {
-                                calcStatus = '<span class="status-plus">+ ₹ ' + currentPoints + ' (Profit)</span>';
-                            } else {
-                                calcStatus = '<span class="status-pending">Pending</span>';
-                            }
-
-                            tableHTML += '<tr>' +
-                                '<td>' + (row.username || 'User_' + id) + '</td>' +
-                                '<td>' + (row.bidNumber || 'N/A') + '</td>' +
-                                '<td>₹ ' + currentPoints + '</td>' +
-                                '<td>' + calcStatus + '</td>' +
-                            '</tr>';
+                        const currentPoints = Number(row.points || 0);
+                        collectionTotal += currentPoints;
+                        
+                        let calcStatus = '';
+                        if (row.status === 'win') {
+                            const winPrize = currentPoints * 90; // Satta/Game logic: 1 ka 90
+                            payingTotal += winPrize;
+                            calcStatus = `<span class="status-minus">- ₹${winPrize} (Dena)</span>`;
+                        } else if (row.status === 'loss') {
+                            calcStatus = `<span class="status-plus">+ ₹${currentPoints} (Profit)</span>`;
+                        } else {
+                            calcStatus = `<span class="status-pending">Pending</span>`;
                         }
+
+                        tableHTML += `<tr>
+                            <td>${row.username || 'Naya User'}</td>
+                            <td>${row.bidNumber || '-'}</td>
+                            <td>₹${currentPoints}</td>
+                            <td>${calcStatus}</td>
+                        </tr>`;
                     });
 
-                    const finalNetValue = collectionTotal - payingTotal;
-
+                    // UI Update
+                    const netProfit = collectionTotal - payingTotal;
                     ledgerBody.innerHTML = tableHTML;
-                    document.getElementById('totalCollection').innerText = '₹ ' + collectionTotal.toLocaleString('en-IN') + '.00';
-                    document.getElementById('totalPaying').innerText = '₹ ' + payingTotal.toLocaleString('en-IN') + '.00';
                     
-                    const profitCard = document.getElementById('netProfit');
-                    profitCard.innerText = '₹ ' + finalNetValue.toLocaleString('en-IN') + '.00';
-                    profitCard.className = finalNetValue >= 0 ? 'status-plus' : 'status-minus';
+                    document.getElementById('totalCollection').innerText = '₹ ' + collectionTotal.toLocaleString('en-IN');
+                    document.getElementById('totalPaying').innerText = '₹ ' + payingTotal.toLocaleString('en-IN');
+                    document.getElementById('netProfit').innerText = '₹ ' + netProfit.toLocaleString('en-IN');
+
+                    // Profit hai ya Loss, color change karo
+                    const profitCard = document.getElementById('profitCardColor');
+                    if(netProfit >= 0) {
+                        profitCard.style.background = "#27ae60"; // Green for profit
+                    } else {
+                        profitCard.style.background = "#c0392b"; // Red for loss
+                    }
                 })
-                .catch(function(error) {
-                    console.log("Communication block alert: ", error);
+                .catch(error => {
+                    console.error("Database Error: ", error);
+                    document.getElementById('ledgerBody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Network Error: Database check karein!</td></tr>';
                 });
         }
 
-        // Loop runs continuous database fetch every 2 seconds
-        pullRealtimeRecords();
-        setInterval(pullRealtimeRecords, 2000);
+        // Har 3 second mein update karega
+        setInterval(pullRealtimeRecords, 3000);
+        pullRealtimeRecords(); // First time call
     </script>
 </body>
 </html>
