@@ -31,8 +31,7 @@
         .status-pending { color: #f39c12; font-weight: bold; }
     </style>
 
-    <!-- Official Firebase Stable CDN Core, Auth, aur Database (Version 8) -->
-    <script src="https://gstatic.com"></script>
+    <!-- Firebase SDK v8 Scripts Setup -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
@@ -44,7 +43,7 @@
     </div>
 
     <div class="container">
-        <!-- 💰 Live Wallet Cards -->
+        <!-- 💰 Wallet Sections -->
         <div class="wallet-section">
             <div class="wallet-title">💰 Khaiwal Wallet Balance (Live Sync)</div>
             <div class="wallet-grid">
@@ -78,7 +77,7 @@
                     </thead>
                     <tbody id="ledgerBody">
                         <tr>
-                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Database se secure connection banaya ja raha hai...</td>
+                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Database se live data fetch ho raha hai...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -87,7 +86,7 @@
     </div>
 
     <script>
-        // Aapki photo se verify ki gayi original config credentials
+        // Bilkul absolute genuine dynamic credentials
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRkedyGEVizemzP9sq6VIPokhw",
             authDomain: "://firebaseapp.com",
@@ -98,84 +97,69 @@
             appId: "1:154722781783:web:7bb136cec1c34911b3f112"
         };
 
-        // Firebase Initialize
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const auth = firebase.auth();
         const database = firebase.database();
 
-        // 🔐 Security Bypass System: Automatic Anonymous Login
-        auth.signInAnonymously()
-            .then(() => {
-                console.log("Secure Connection Established!");
-                startRealtimeSync();
-            })
-            .catch((error) => {
-                console.error("Auth Error: ", error);
-                // Agar Auth disable hai, fir bhi direct fetch chalu rakhein
-                startRealtimeSync();
-            });
+        // Realtime loop reader function
+        database.ref('bids').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const ledgerBody = document.getElementById('ledgerBody');
+            
+            if (!data) {
+                ledgerBody.innerHTML = <tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>;
+                document.getElementById('totalCollection').innerText = "₹ 0.00";
+                document.getElementById('netProfit').innerText = "₹ 0.00";
+                document.getElementById('totalPaying').innerText = "₹ 0.00";
+                return;
+            }
 
-        function startRealtimeSync() {
-            // Live WebSocket continuous data link
-            database.ref('bids').on('value', (snapshot) => {
-                const data = snapshot.val();
-                const ledgerBody = document.getElementById('ledgerBody');
-                
-                if (!data) {
-                    ledgerBody.innerHTML = <tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>;
-                    document.getElementById('totalCollection').innerText = "₹ 0.00";
-                    document.getElementById('netProfit').innerText = "₹ 0.00";
-                    document.getElementById('totalPaying').innerText = "₹ 0.00";
-                    return;
-                }
+            let totalCollection = 0;
+            let totalPaying = 0;
+            let tableHTML = '';
 
-                let totalCollection = 0;
-                let totalPaying = 0;
-                let tableHTML = '';
-
-                Object.keys(data).forEach((id) => {
-                    const row = data[id];
-                    if (row) {
-                        const p = Number(row.points || 0);
-                        totalCollection += p;
-                        
-                        let statusHTML = '';
-                        if (row.status === 'win') {
-                            const winningAmount = p * 90;
-                            totalPaying += winningAmount;
-                            statusHTML = <span class="status-minus">- ₹ ${winningAmount} (Dena Hai)</span>;
-                        } else if (row.status === 'loss') {
-                            statusHTML = <span class="status-plus">+ ₹ ${p} (Profit)</span>;
-                        } else {
-                            statusHTML = <span class="status-pending">Pending</span>;
-                        }
-
-                        tableHTML += `<tr>
-                            <td>${row.username || 'User_' + id}</td>
-                            <td>${row.bidNumber || 'N/A'}</td>
-                            <td>₹ ${p}</td>
-                            <td>${statusHTML}</td>
-                        </tr>`;
+            Object.keys(data).forEach((id) => {
+                const row = data[id];
+                if (row) {
+                    const p = Number(row.points || 0);
+                    totalCollection += p;
+                    
+                    let statusHTML = '';
+                    if (row.status === 'win') {
+                        const winningAmount = p * 90;
+                        totalPaying += winningAmount;
+                        statusHTML = <span class="status-minus">- ₹ ${winningAmount} (Dena Hai)</span>;
+                    } else if (row.status === 'loss') {
+                        statusHTML = <span class="status-plus">+ ₹ ${p} (Profit)</span>;
+                    } else {
+                        statusHTML = <span class="status-pending">Pending</span>;
                     }
-                });
 
-                const netProfit = totalCollection - totalPaying;
-
-                // Live Interface update render
-                ledgerBody.innerHTML = tableHTML;
-                document.getElementById('totalCollection').innerText = ₹ ${totalCollection.toLocaleString('en-IN')}.00;
-                document.getElementById('totalPaying').innerText = ₹ ${totalPaying.toLocaleString('en-IN')}.00;
-                
-                const profitElement = document.getElementById('netProfit');
-                profitElement.innerText = ₹ ${netProfit.toLocaleString('en-IN')}.00;
-                profitElement.className = netProfit >= 0 ? 'status-plus' : 'status-minus';
-            }, (error) => {
-                console.error("Database Connection Fail: ", error);
-                document.getElementById('ledgerBody').innerHTML = <tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 30px;">Connection temporary blocked. Rules allow kijiye.</td></tr>;
+                    tableHTML += `<tr>
+                        <td>${row.username || 'User_' + id}</td>
+                        <td>${row.bidNumber || 'N/A'}</td>
+                        <td>₹ ${p}</td>
+                        <td>${statusHTML}</td>
+                    </tr>`;
+                }
             });
-        }
+
+            const netProfit = totalCollection - totalPaying;
+
+            // DOM Updates Rendering
+            ledgerBody.innerHTML = tableHTML;
+            document.getElementById('totalCollection').innerText = ₹ ${totalCollection.toLocaleString('en-IN')}.00;
+            document.getElementById('totalPaying').innerText = ₹ ${totalPaying.toLocaleString('en-IN')}.00;
+            
+            const profitElement = document.getElementById('netProfit');
+            profitElement.innerText = ₹ ${netProfit.toLocaleString('en-IN')}.00;
+            profitElement.className = netProfit >= 0 ? 'status-plus' : 'status-minus';
+        }, (error) => {
+            console.error("Firebase Read Error: ", error);
+            document.getElementById('ledgerBody').innerHTML = <tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 30px;">Firebase system communication block.</td></tr>;
+        });
     </script>
 </body>
 </html>
