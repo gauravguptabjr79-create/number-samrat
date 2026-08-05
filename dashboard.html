@@ -31,7 +31,7 @@
         .status-pending { color: #f39c12; font-weight: bold; }
     </style>
 
-    <!-- Firebase SDK v8 Scripts Setup -->
+    <!-- Firebase Core and Database Libraries -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
 </head>
@@ -43,7 +43,6 @@
     </div>
 
     <div class="container">
-        <!-- 💰 Wallet Sections -->
         <div class="wallet-section">
             <div class="wallet-title">💰 Khaiwal Wallet Balance (Live Sync)</div>
             <div class="wallet-grid">
@@ -62,7 +61,6 @@
             </div>
         </div>
 
-        <!-- 📊 Live Table -->
         <div class="ledger-section">
             <div class="ledger-title">📊 Aaj Ka Hisab-Kitab (Real-time Ledger)</div>
             <div class="table-responsive">
@@ -86,7 +84,7 @@
     </div>
 
     <script>
-        // Bilkul absolute genuine dynamic credentials
+        // Verified Configuration block
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRkedyGEVizemzP9sq6VIPokhw",
             authDomain: "://firebaseapp.com",
@@ -97,19 +95,19 @@
             appId: "1:154722781783:web:7bb136cec1c34911b3f112"
         };
 
-        // Initialize Firebase
+        // Initialize
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const database = firebase.database();
 
-        // Realtime loop reader function
-        database.ref('bids').on('value', (snapshot) => {
+        // Listen for Realtime Updates
+        database.ref('bids').on('value', function(snapshot) {
             const data = snapshot.val();
             const ledgerBody = document.getElementById('ledgerBody');
             
             if (!data) {
-               ledgerBody.innerHTML = <tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>;
+                ledgerBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>';
                 document.getElementById('totalCollection').innerText = "₹ 0.00";
                 document.getElementById('netProfit').innerText = "₹ 0.00";
                 document.getElementById('totalPaying').innerText = "₹ 0.00";
@@ -120,7 +118,7 @@
             let totalPaying = 0;
             let tableHTML = '';
 
-            Object.keys(data).forEach((id) => {
+            Object.keys(data).forEach(function(id) {
                 const row = data[id];
                 if (row) {
                     const p = Number(row.points || 0);
@@ -130,35 +128,31 @@
                     if (row.status === 'win') {
                         const winningAmount = p * 90;
                         totalPaying += winningAmount;
-                        statusHTML = <span class="status-minus">- ₹ ${winningAmount} (Dena Hai)</span>;
+                        statusHTML = '<span class="status-minus">- ₹ ' + winningAmount + ' (Dena Hai)</span>';
                     } else if (row.status === 'loss') {
-                        statusHTML = <span class="status-plus">+ ₹ ${p} (Profit)</span>;
+                        statusHTML = '<span class="status-plus">+ ₹ ' + p + ' (Profit)</span>';
                     } else {
-                        statusHTML = <span class="status-pending">Pending</span>;
+                        statusHTML = '<span class="status-pending">Pending</span>';
                     }
 
-                    tableHTML += `<tr>
-                        <td>${row.username || 'User_' + id}</td>
-                        <td>${row.bidNumber || 'N/A'}</td>
-                        <td>₹ ${p}</td>
-                        <td>${statusHTML}</td>
-                    </tr>`;
+                    tableHTML += '<tr>' +
+                        '<td>' + (row.username || 'User_' + id) + '</td>' +
+                        '<td>' + (row.bidNumber || 'N/A') + '</td>' +
+                        '<td>₹ ' + p + '</td>' +
+                        '<td>' + statusHTML + '</td>' +
+                    '</tr>';
                 }
             });
 
             const netProfit = totalCollection - totalPaying;
 
-            // DOM Updates Rendering
             ledgerBody.innerHTML = tableHTML;
-            document.getElementById('totalCollection').innerText = ₹ ${totalCollection.toLocaleString('en-IN')}.00;
-            document.getElementById('totalPaying').innerText = ₹ ${totalPaying.toLocaleString('en-IN')}.00;
+            document.getElementById('totalCollection').innerText = '₹ ' + totalCollection.toLocaleString('en-IN') + '.00';
+            document.getElementById('totalPaying').innerText = '₹ ' + totalPaying.toLocaleString('en-IN') + '.00';
             
             const profitElement = document.getElementById('netProfit');
-            profitElement.innerText = ₹ ${netProfit.toLocaleString('en-IN')}.00;
+            profitElement.innerText = '₹ ' + netProfit.toLocaleString('en-IN') + '.00';
             profitElement.className = netProfit >= 0 ? 'status-plus' : 'status-minus';
-        }, (error) => {
-            console.error("Firebase Read Error: ", error);
-            document.getElementById('ledgerBody').innerHTML = <tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 30px;">Firebase system communication block.</td></tr>;
         });
     </script>
 </body>
