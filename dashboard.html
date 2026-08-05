@@ -86,7 +86,7 @@
     </div>
 
     <script>
-        // Aapki photo se nikali hui Firebase configurations
+        // Sahi aur absolute fixed Firebase configuration data
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRkedyGEVizemzP9sq6VIPokhw",
             authDomain: "://firebaseapp.com",
@@ -101,7 +101,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Real-time data fetch logic
+        // Real-time data fetch logic (Updated)
         database.ref('bids').on('value', (snapshot) => {
             const data = snapshot.val();
             const ledgerBody = document.getElementById('ledgerBody');
@@ -118,18 +118,18 @@
             let totalPaying = 0;
             let tableHTML = '';
 
-            // Database se aane wale data ko loop karna
-            for (let id in data) {
+            Object.keys(data).forEach((id) => {
                 const row = data[id];
-                totalCollection += Number(row.points || 0);
+                const p = Number(row.points || 0);
+                totalCollection += p;
                 
                 let statusHTML = '';
                 if (row.status === 'win') {
-                    const winningAmount = Number(row.points || 0) * 90; // Standard 90x calculation
+                    const winningAmount = p * 90;
                     totalPaying += winningAmount;
                     statusHTML = <span class="status-minus">- ₹ ${winningAmount} (Dena Hai)</span>;
                 } else if (row.status === 'loss') {
-                    statusHTML = <span class="status-plus">+ ₹ ${row.points} (Profit)</span>;
+                    statusHTML = <span class="status-plus">+ ₹ ${p} (Profit)</span>;
                 } else {
                     statusHTML = <span class="status-pending">Pending</span>;
                 }
@@ -137,15 +137,13 @@
                 tableHTML += `<tr>
                     <td>${row.username || id}</td>
                     <td>${row.bidNumber || 'N/A'}</td>
-                    <td>₹ ${row.points || 0}</td>
+                    <td>₹ ${p}</td>
                     <td>${statusHTML}</td>
                 </tr>`;
-            }
+            });
 
-            // Calculation fix karna
             const netProfit = totalCollection - totalPaying;
 
-            // UI par data lagana
             ledgerBody.innerHTML = tableHTML;
             document.getElementById('totalCollection').innerText = ₹ ${totalCollection.toLocaleString('en-IN')}.00;
             document.getElementById('totalPaying').innerText = ₹ ${totalPaying.toLocaleString('en-IN')}.00;
