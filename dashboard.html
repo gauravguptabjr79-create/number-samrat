@@ -9,46 +9,40 @@
         body { background: #f4f6f9; color: #333; }
         .navbar { background: #1e3799; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 20px; font-weight: bold; }
-        .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .refresh-btn { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         
-        /* Wallet Cards */
         .wallet-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
         .wallet-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #1e3799; }
         .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .card { padding: 20px; border-radius: 8px; color: white; transition: 0.3s; }
+        .card { padding: 20px; border-radius: 8px; color: white; }
         .card-total { background: #2980b9; } 
         .card-paying { background: #c0392b; } 
         .card-profit { background: #27ae60; } 
         .card p { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
         .card h2 { font-size: 26px; font-weight: bold; }
 
-        /* Table */
         .ledger-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .ledger-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
         th { background: #f8f9fa; color: #555; }
         
-        /* Status Colors */
         .status-plus { color: #27ae60; font-weight: bold; }
         .status-minus { color: #c0392b; font-weight: bold; }
         .status-pending { color: #f39c12; font-weight: bold; }
-        .loading { text-align: center; padding: 40px; color: #888; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
         <div class="logo">👑 Number Samrat (Khaiwal Panel)</div>
-        <button class="logout-btn" onclick="location.reload()">Refresh Page</button>
+        <button class="refresh-btn" onclick="updateDashboard()">Live Refresh</button>
     </div>
 
     <div class="container">
-        <!-- Live Wallet Cards -->
         <div class="wallet-section">
-            <div class="wallet-title">💰 Live Hisab-Kitab</div>
+            <div class="wallet-title">💰 Live Hisab-Kitab (Bids Folder)</div>
             <div class="wallet-grid">
                 <div class="card card-total">
                     <p>Total Collection (Aaya)</p>
@@ -65,9 +59,7 @@
             </div>
         </div>
 
-        <!-- Live Table -->
         <div class="ledger-section">
-            <div class="ledger-title">📊 Real-time User Bids</div>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -79,9 +71,7 @@
                         </tr>
                     </thead>
                     <tbody id="ledgerBody">
-                        <tr>
-                            <td colspan="4" class="loading">Database se connect ho raha hai...</td>
-                        </tr>
+                        <tr><td colspan="4" style="text-align:center; padding:20px;">Fetching Bids...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -89,8 +79,8 @@
     </div>
 
     <script>
-        // Aapka Corrected Firebase URL
-        const targetUrl = "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app/.json";
+        // UPDATE: 'bids.json' lagaya hai kyunki data bids ke andar hai
+        const targetUrl = "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app/bids.json";
 
         function updateDashboard() {
             fetch(targetUrl)
@@ -99,7 +89,7 @@
                     const tbody = document.getElementById('ledgerBody');
                     
                     if (!data) {
-                        tbody.innerHTML = '<tr><td colspan="4" class="loading">Koi data nahi mila.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Abhi koi bids nahi hain.</td></tr>';
                         return;
                     }
 
@@ -107,48 +97,51 @@
                     let paying = 0;
                     let rowsHtml = '';
 
-                    // Firebase ke har entry ko loop mein chalana
+                    // Firebase Data ko loop mein daalna
                     Object.keys(data).forEach(key => {
                         const item = data[key];
-                        // Agar aapka data nested hai (jaise 'bets' folder ke andar), toh yahan handle hoga
-                        const val = item.points || item.amount || 0; 
-                        const points = Number(val);
+                        if(!item) return;
+
+                        const points = Number(item.points || 0);
+                        const name = item.username || "N/A";
+                        const bidNo = item.bidNumber || "-";
+                        const status = (item.status || "pending").toLowerCase();
+
                         collection += points;
 
                         let statusHtml = '';
-                        if (item.status === 'win') {
+                        if (status === 'win') {
                             const winAmount = points * 90;
                             paying += winAmount;
-                            statusHtml = `<span class="status-minus">Dena: ₹${winAmount}</span>`;
-                        } else if (item.status === 'loss') {
-                            statusHtml = `<span class="status-plus">Bacha: ₹${points}</span>`;
+                            statusHtml = `<span class="status-minus">Win (Dena: ₹${winAmount})</span>`;
+                        } else if (status === 'loss') {
+                            statusHtml = `<span class="status-plus">Loss (Bacha: ₹${points})</span>`;
                         } else {
-                            statusHtml = `<span class="status-pending">Pending...</span>`;
+                            statusHtml = `<span class="status-pending">Pending</span>`;
                         }
 
                         rowsHtml += `<tr>
-                            <td>${item.username || item.name || 'User'}</td>
-                            <td>${item.bidNumber || item.number || '-'}</td>
+                            <td>${name}</td>
+                            <td>${bidNo}</td>
                             <td>₹${points}</td>
                             <td>${statusHtml}</td>
                         </tr>`;
                     });
 
-                    // UI Update karein
                     tbody.innerHTML = rowsHtml;
                     document.getElementById('totalCollection').innerText = '₹ ' + collection.toLocaleString('en-IN');
                     document.getElementById('totalPaying').innerText = '₹ ' + paying.toLocaleString('en-IN');
                     
                     const net = collection - paying;
-                    document.getElementById('netProfit').innerText = '₹ ' + net.toLocaleString('en-IN');
+                    const netElem = document.getElementById('netProfit');
+                    netElem.innerText = '₹ ' + net.toLocaleString('en-IN');
                     
-                    // Card color change based on profit/loss
-                    const pCard = document.getElementById('profitCard');
-                    pCard.style.background = net >= 0 ? '#27ae60' : '#c0392b';
+                    // Card color logic
+                    document.getElementById('profitCard').style.background = net >= 0 ? '#27ae60' : '#c0392b';
                 })
                 .catch(err => {
                     console.error("Error:", err);
-                    document.getElementById('ledgerBody').innerHTML = '<tr><td colspan="4" style="color:red; text-align:center; padding:20px;">Connection Error! Rules check karein.</td></tr>';
+                    document.getElementById('ledgerBody').innerHTML = '<tr><td colspan="4" style="color:red; text-align:center;">Network Error! Check URL.</td></tr>';
                 });
         }
 
