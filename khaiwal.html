@@ -13,6 +13,7 @@
         .input-box:focus { border-color: #1e3799; }
         .login-btn { width: 100%; padding: 12px; background: #1e3799; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .login-btn:hover { background: #0a1f73; }
+        .error-msg { color: #e74c3c; font-size: 14px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -26,8 +27,27 @@
             <input type="text" id="khaiwalId" class="input-box" placeholder="Khaiwal ID" required>
             <input type="password" id="password" class="input-box" placeholder="Password" required>
             <button type="submit" class="login-btn">Log In</button>
+            <div id="error" class="error-msg">Galat ID ya Password! Pukaar se check karein.</div>
         </form>
     </div>
+
+    <script>
+        document.getElementById('khaiwalLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Page ko reload hone se rokne ke liye
+            
+            var id = document.getElementById('khaiwalId').value;
+            var pass = document.getElementById('password').value;
+            var errorDiv = document.getElementById('error');
+
+            // Abhi ke liye temporary ID: admin aur Password: admin123 rakha hai
+            if(id === 'admin' && pass === 'admin123') {
+                errorDiv.style.display = 'none';
+                window.location.href = 'dashboard.html'; // Sahi hone par dashboard khulega
+            } else {
+                errorDiv.style.display = 'block'; // Galat hone par error dikhega
+            }
+        });
+    </script>
 
 </body>
 </html>
