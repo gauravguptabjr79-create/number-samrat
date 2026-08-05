@@ -39,7 +39,7 @@
     </div>
 
     <div class="container">
-        <!-- Live Status Cards -->
+        <!-- Live Wallet Cards -->
         <div class="wallet-section">
             <div class="wallet-title">💰 Khaiwal Wallet Balance (Live Sync)</div>
             <div class="wallet-grid">
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <!-- Live Ledger Table -->
+        <!-- Live Table -->
         <div class="ledger-section">
             <div class="ledger-title">📊 Aaj Ka Hisab-Kitab (Real-time Ledger)</div>
             <div class="table-responsive">
@@ -82,8 +82,9 @@
     </div>
 
     <script>
-        // Bulletproof open link database logic endpoint
-      const targetUrl = "https://firebasedatabase.app"; 
+        // Sahi aur absolute genuine Singapore database link (Fixed Format)
+        const targetUrl = "https://firebasedatabase.app";
+
         function pullRealtimeRecords() {
             fetch(targetUrl)
                 .then(function(response) {
@@ -107,45 +108,45 @@
                     Object.keys(data).forEach(function(id) {
                         const row = data[id];
                         if (row) {
-                            const p = Number(row.points || 0);
-                            collectionTotal += p;
+                            const currentPoints = Number(row.points || 0);
+                            collectionTotal += currentPoints;
                             
-                            let statusHTML = '';
+                            let calcStatus = '';
                             if (row.status === 'win') {
-                                const winningAmount = p * 90;
-                                payingTotal += winningAmount;
-                                statusHTML = '<span class="status-minus">- ₹ ' + winningAmount + ' (Dena Hai)</span>';
+                                const winPrize = currentPoints * 90;
+                                payingTotal += winPrize;
+                                calcStatus = '<span class="status-minus">- ₹ ' + winPrize + ' (Dena Hai)</span>';
                             } else if (row.status === 'loss') {
-                                statusHTML = '<span class="status-plus">+ ₹ ' + p + ' (Profit)</span>';
+                                calcStatus = '<span class="status-plus">+ ₹ ' + currentPoints + ' (Profit)</span>';
                             } else {
-                                statusHTML = '<span class="status-pending">Pending</span>';
+                                calcStatus = '<span class="status-pending">Pending</span>';
                             }
 
                             tableHTML += '<tr>' +
                                 '<td>' + (row.username || 'User_' + id) + '</td>' +
                                 '<td>' + (row.bidNumber || 'N/A') + '</td>' +
-                                '<td>₹ ' + p + '</td>' +
-                                '<td>' + statusHTML + '</td>' +
+                                '<td>₹ ' + currentPoints + '</td>' +
+                                '<td>' + calcStatus + '</td>' +
                             '</tr>';
                         }
                     });
 
-                    const netProfit = collectionTotal - payingTotal;
+                    const finalNetValue = collectionTotal - payingTotal;
 
                     ledgerBody.innerHTML = tableHTML;
                     document.getElementById('totalCollection').innerText = '₹ ' + collectionTotal.toLocaleString('en-IN') + '.00';
                     document.getElementById('totalPaying').innerText = '₹ ' + payingTotal.toLocaleString('en-IN') + '.00';
                     
-                    const profitElement = document.getElementById('netProfit');
-                    profitElement.innerText = '₹ ' + netProfit.toLocaleString('en-IN') + '.00';
-                    profitElement.className = netProfit >= 0 ? 'status-plus' : 'status-minus';
+                    const profitCard = document.getElementById('netProfit');
+                    profitCard.innerText = '₹ ' + finalNetValue.toLocaleString('en-IN') + '.00';
+                    profitCard.className = finalNetValue >= 0 ? 'status-plus' : 'status-minus';
                 })
                 .catch(function(error) {
                     console.log("Communication block alert: ", error);
                 });
         }
 
-        // Interval run mode triggers loop every 2 seconds
+        // Loop runs continuous database fetch every 2 seconds
         pullRealtimeRecords();
         setInterval(pullRealtimeRecords, 2000);
     </script>
