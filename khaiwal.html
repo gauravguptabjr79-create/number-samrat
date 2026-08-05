@@ -2,79 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Number Samrat - Auto Khaiwal Panel</title>
+    <title>Khaiwal Registration & Login</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background: #f4f6f9; }
-        .navbar { background: #1e3799; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
         
-        /* Live Number Card (Coming from Cloud) */
-        .cloud-result-box { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; border-top: 6px solid #f39c12; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .cloud-result-box h1 { font-size: 50px; color: #1e3799; margin: 10px 0; letter-spacing: 5px; }
-        .status-tag { display: inline-block; padding: 5px 15px; background: #fde68a; color: #92400e; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .auth-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        h2 { color: #1e3799; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-login { background: #1e3799; color: white; }
+        .btn-reg { background: #27ae60; color: white; }
+        .toggle-link { margin-top: 15px; font-size: 13px; color: #555; cursor: pointer; text-decoration: underline; }
 
-        .wallet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { padding: 20px; border-radius: 10px; color: white; text-align: center; }
-        .card-aaya { background: #2980b9; }
-        .card-dena { background: #c0392b; }
-        .card-bacha { background: #27ae60; }
-
-        .table-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        .win { color: #c0392b; font-weight: bold; }
-        .loss { color: #27ae60; font-weight: bold; }
+        /* Dashboard (Hidden by Default) */
+        #dashboardPage { display: none; width: 100%; height: 100vh; background: #f4f6f9; position: fixed; top: 0; left: 0; overflow-y: auto; }
+        /* Purana Dashboard wala CSS yahan aayega (Maine short rakha hai) */
+        .navbar { background: #1e3799; color: white; padding: 15px; display: flex; justify-content: space-between; }
+        .card { padding: 20px; background: #fff; margin: 10px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <div>👑 Number Samrat (Khaiwal Panel)</div>
-        <div style="font-size: 14px;">Cloud Sync: <span id="syncStatus">Connected ✅</span></div>
+    <!-- LOGIN / REGISTER PAGE -->
+    <div id="authPage" class="auth-card">
+        <h2 id="authTitle">Khaiwal Login</h2>
+        <input type="text" id="khaiwalID" placeholder="Khaiwal ID (Unique)">
+        <input type="password" id="khaiwalPass" placeholder="Password">
+        
+        <button id="mainBtn" class="btn btn-login" onclick="handleAuth()">Login Karein</button>
+        
+        <p class="toggle-link" id="toggleText" onclick="toggleAuth()">Naya Account Banayein (Register)</p>
     </div>
 
-    <div class="container">
-        <!-- Google Cloud Live Result -->
-        <div class="cloud-result-box">
-            <span class="status-tag">LIVE RESULT FROM CLOUD</span>
-            <h1 id="cloudLiveNumber">--</h1>
-            <p style="color: #666; font-size: 14px;">Abhi ka winning number automatic yahan update hoga</p>
+    <!-- DASHBOARD PAGE (Jo login ke baad khulega) -->
+    <div id="dashboardPage">
+        <div class="navbar">
+            <div id="welcomeUser">👑 Khaiwal Panel</div>
+            <button onclick="location.reload()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px;">Logout</button>
         </div>
-
-        <!-- Wallet Section -->
-        <div class="wallet-grid">
-            <div class="card card-aaya">
-                <p>Total Collection (Aaya)</p>
-                <h2 id="totalAaya">₹ 0</h2>
+        <div style="padding: 20px; text-align: center;">
+            <h1 id="liveRes" style="font-size: 50px; color: #1e3799;">--</h1>
+            <p>Live Result From Cloud</p>
+            <div id="walletInfo" style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+                <div class="card">Aaya: <br><b id="totalAaya">0</b></div>
+                <div class="card">Dena: <br><b id="totalDena">0</b></div>
+                <div class="card">Bacha: <br><b id="netProfit">0</b></div>
             </div>
-            <div class="card card-dena">
-                <p>Total Paying (Dena)</p>
-                <h2 id="totalDena">₹ 0</h2>
-            </div>
-            <div class="card card-bacha" id="profitCard">
-                <p>Net Bacha (Profit)</p>
-                <h2 id="netProfit">₹ 0</h2>
-            </div>
-        </div>
-
-        <!-- Table Section -->
-        <div class="table-box">
-            <h3 style="margin-bottom:15px; color:#1e3799;">📊 Bids History & Auto Calculation</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>User Name</th>
-                        <th>Bid Number</th>
-                        <th>Points</th>
-                        <th>Status / Calculation</th>
-                    </tr>
-                </thead>
-                <tbody id="bidTableBody">
-                    <!-- Data yahan aayega -->
-                </tbody>
+            <table style="width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff;">
+                <thead><tr style="background: #eee;"><th>User</th><th>No.</th><th>Pts</th><th>Status</th></tr></thead>
+                <tbody id="bidTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -84,65 +63,90 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Database Listener - Root ko listen kar rahe hain
-        db.ref().on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
+        let isLoginMode = true;
 
-            // 1. Google Cloud Result Fetching Logic
-            // Cloud Function inme se kisi ek naam se result save karta hai
-            const liveResult = data.liveResult || data.result || data.winningNumber || "--";
-            document.getElementById('cloudLiveNumber').innerText = liveResult;
+        // 1. Login aur Register toggle karne ke liye
+        function toggleAuth() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? "Khaiwal Login" : "Khaiwal Registration";
+            document.getElementById('mainBtn').innerText = isLoginMode ? "Login Karein" : "Account Banayein";
+            document.getElementById('mainBtn').className = isLoginMode ? "btn btn-login" : "btn btn-reg";
+            document.getElementById('toggleText').innerText = isLoginMode ? "Naya Account Banayein (Register)" : "Purana Account hai? Login karein";
+        }
 
-            // 2. Bids Processing
-            const bids = data.bids;
-            const tbody = document.getElementById('bidTableBody');
-            
-            let totalAaya = 0;
-            let totalDena = 0;
-            let html = '';
+        // 2. Main Login/Register Logic
+        function handleAuth() {
+            const id = document.getElementById('khaiwalID').value.trim();
+            const pass = document.getElementById('khaiwalPass').value.trim();
 
-            if (bids) {
-                Object.keys(bids).forEach(key => {
-                    const bid = bids[key];
-                    const pts = Number(bid.points || 0);
-                    totalAaya += pts;
+            if (id === "" || pass === "") { alert("Dono cheezein bharna zaroori hai!"); return; }
 
-                    let statusText = '';
-                    
-                    // Agar Cloud se result aa gaya hai, toh auto-calculate karo
-                    if (liveResult !== "--" && liveResult !== "") {
-                        if (bid.bidNumber == liveResult) {
-                            const winAmount = pts * 90;
-                            totalDena += winAmount;
-                            statusText = `<span class="win">WIN (Dena: ₹${winAmount})</span>`;
-                        } else {
-                            statusText = `<span class="loss">LOSS (Profit: ₹${pts})</span>`;
-                        }
+            if (isLoginMode) {
+                // LOGIN LOGIC: Database mein check karo
+                db.ref('khaiwals/' + id).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        if (userData.password === pass) {
+                            openDashboard(id);
+                        } else { alert("Galat Password!"); }
+                    } else { alert("Ye Khaiwal ID nahi mili! Pehle Register karein."); }
+                });
+            } else {
+                // REGISTER LOGIC: Database mein save karo
+                db.ref('khaiwals/' + id).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        alert("Ye ID pehle se kisi ne le rakhi hai! Doosri chuney.");
                     } else {
-                        statusText = `<span style="color:#f39c12">Bidding...</span>`;
+                        db.ref('khaiwals/' + id).set({
+                            password: pass,
+                            regDate: new Date().toLocaleDateString()
+                        }).then(() => {
+                            alert("Account Ban Gaya! Ab Login karein.");
+                            toggleAuth();
+                        });
                     }
-
-                    html += `<tr>
-                        <td>${bid.username || 'User'}</td>
-                        <td><b>${bid.bidNumber}</b></td>
-                        <td>₹${pts}</td>
-                        <td>${statusText}</td>
-                    </tr>`;
                 });
             }
+        }
 
-            // 3. UI Update
-            tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">Bids ka intezar hai...</td></tr>';
-            document.getElementById('totalAaya').innerText = '₹ ' + totalAaya.toLocaleString('en-IN');
-            document.getElementById('totalDena').innerText = '₹ ' + totalDena.toLocaleString('en-IN');
-            
-            const net = totalAaya - totalDena;
-            document.getElementById('netProfit').innerText = '₹ ' + net.toLocaleString('en-IN');
-            
-            // Profit/Loss Color
-            document.getElementById('profitCard').style.background = net >= 0 ? '#27ae60' : '#c0392b';
-        });
+        // 3. Dashboard Kholna
+        function openDashboard(khaiwalName) {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+            document.getElementById('welcomeUser').innerText = "👑 Khaiwal: " + khaiwalName;
+            startLiveUpdates();
+        }
+
+        // 4. Live Updates (Purana Logic)
+        function startLiveUpdates() {
+            db.ref().on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(!data) return;
+
+                const liveNum = data.liveResult || data.result || "";
+                document.getElementById('liveRes').innerText = liveNum || "Wait...";
+
+                const bids = data.bids;
+                let aaya = 0, dena = 0, html = '';
+
+                if (bids) {
+                    Object.keys(bids).forEach(key => {
+                        const b = bids[key];
+                        const p = Number(b.points || 0);
+                        aaya += p;
+                        let st = 'Pending';
+                        if (liveNum !== "") {
+                            if (b.bidNumber == liveNum) { dena += (p*90); st = 'Win'; } else { st = 'Loss'; }
+                        }
+                        html += `<tr><td>${b.username}</td><td>${b.bidNumber}</td><td>${p}</td><td>${st}</td></tr>`;
+                    });
+                }
+                document.getElementById('bidTableBody').innerHTML = html;
+                document.getElementById('totalAaya').innerText = aaya;
+                document.getElementById('totalDena').innerText = dena;
+                document.getElementById('netProfit').innerText = (aaya - dena);
+            });
+        }
     </script>
 </body>
 </html>
