@@ -30,6 +30,11 @@
         .status-minus { color: #c0392b; font-weight: bold; }
         .status-pending { color: #f39c12; font-weight: bold; }
     </style>
+
+    <!-- Official Firebase Stable CDN Core, Auth, aur Database (Version 8) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
 <body>
 
@@ -39,6 +44,7 @@
     </div>
 
     <div class="container">
+        <!-- 💰 Live Wallet Cards -->
         <div class="wallet-section">
             <div class="wallet-title">💰 Khaiwal Wallet Balance (Live Sync)</div>
             <div class="wallet-grid">
@@ -57,6 +63,7 @@
             </div>
         </div>
 
+        <!-- 📊 Live Table -->
         <div class="ledger-section">
             <div class="ledger-title">📊 Aaj Ka Hisab-Kitab (Real-time Ledger)</div>
             <div class="table-responsive">
@@ -71,7 +78,7 @@
                     </thead>
                     <tbody id="ledgerBody">
                         <tr>
-                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Database se live data fetch ho raha hai...</td>
+                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Database se secure connection banaya ja raha hai...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -80,78 +87,95 @@
     </div>
 
     <script>
-        // Security block bypass karne ke liye alternative open route url
-        const targetUrl = "https://firebasedatabase.app";
-        
-        // CORS Proxy badal kar use direct open fetch request banana
-        const dbUrl = "https://allorigins.win" + encodeURIComponent(targetUrl);
+        // Aapki photo se verify ki gayi original config credentials
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_Da_doRkedyGEVizemzP9sq6VIPokhw",
+            authDomain: "://firebaseapp.com",
+            databaseURL: "https://firebasedatabase.app",
+            projectId: "number-samrat",
+            storageBucket: "://appspot.com",
+            messagingSenderId: "154722781783",
+            appId: "1:154722781783:web:7bb136cec1c34911b3f112"
+        };
 
-        function loadLiveRecords() {
-            fetch(dbUrl)
-                .then(res => {
-                    if (res.ok) return res.json();
-                    throw new Error('Network response error.');
-                })
-                .then(wrapper => {
-                    // AllOrigins wrapper se asli data nikalna
-                    const data = JSON.parse(wrapper.contents);
-                    const ledgerBody = document.getElementById('ledgerBody');
-                    
-                    if (!data) {
-                        ledgerBody.innerHTML = <tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>;
-                        document.getElementById('totalCollection').innerText = "₹ 0.00";
-                        document.getElementById('netProfit').innerText = "₹ 0.00";
-                        document.getElementById('totalPaying').innerText = "₹ 0.00";
-                        return;
-                    }
-
-                    let collectionTotal = 0;
-                    let payingTotal = 0;
-                    let dynamicRows = '';
-
-                    Object.keys(data).forEach((key) => {
-                        const item = data[key];
-                        if (item) {
-                            const currentPoints = Number(item.points || 0);
-                            collectionTotal += currentPoints;
-                            
-                            let calcStatus = '';
-                            if (item.status === 'win') {
-                                const winPrize = currentPoints * 90;
-                                payingTotal += winPrize;
-                                calcStatus = <span class="status-minus">- ₹ ${winPrize} (Dena Hai)</span>;
-                            } else if (item.status === 'loss') {
-                                calcStatus = <span class="status-plus">+ ₹ ${currentPoints} (Profit)</span>;
-                            } else {
-                                calcStatus = <span class="status-pending">Pending</span>;
-                            }
-
-                            dynamicRows += `<tr>
-                                <td>${item.username || 'User_' + key}</td>
-                                <td>${item.bidNumber || 'N/A'}</td>
-                                <td>₹ ${currentPoints}</td>
-                                <td>${calcStatus}</td>
-                            </tr>`;
-                        }
-                    });
-
-                    const finalNetValue = collectionTotal - payingTotal;
-
-                    ledgerBody.innerHTML = dynamicRows;
-                    document.getElementById('totalCollection').innerText = ₹ ${collectionTotal.toLocaleString('en-IN')}.00;
-                    document.getElementById('totalPaying').innerText = ₹ ${payingTotal.toLocaleString('en-IN')}.00;
-                    
-                    const profitCard = document.getElementById('netProfit');
-                    profitCard.innerText = ₹ ${finalNetValue.toLocaleString('en-IN')}.00;
-                    profitCard.className = finalNetValue >= 0 ? 'status-plus' : 'status-minus';
-                })
-                .catch(err => {
-                    console.log("Fetch block error: ", err);
-                });
+        // Firebase Initialize
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
+        const auth = firebase.auth();
+        const database = firebase.database();
 
-        loadLiveRecords();
-        setInterval(loadLiveRecords, 4000);
+        // 🔐 Security Bypass System: Automatic Anonymous Login
+        auth.signInAnonymously()
+            .then(() => {
+                console.log("Secure Connection Established!");
+                startRealtimeSync();
+            })
+            .catch((error) => {
+                console.error("Auth Error: ", error);
+                // Agar Auth disable hai, fir bhi direct fetch chalu rakhein
+                startRealtimeSync();
+            });
+
+        function startRealtimeSync() {
+            // Live WebSocket continuous data link
+            database.ref('bids').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const ledgerBody = document.getElementById('ledgerBody');
+                
+                if (!data) {
+                    ledgerBody.innerHTML = <tr><td colspan="4" style="text-align: center; color: #888; padding: 30px;">Abhi tak koi live game entry nahi hui hai.</td></tr>;
+                    document.getElementById('totalCollection').innerText = "₹ 0.00";
+                    document.getElementById('netProfit').innerText = "₹ 0.00";
+                    document.getElementById('totalPaying').innerText = "₹ 0.00";
+                    return;
+                }
+
+                let totalCollection = 0;
+                let totalPaying = 0;
+                let tableHTML = '';
+
+                Object.keys(data).forEach((id) => {
+                    const row = data[id];
+                    if (row) {
+                        const p = Number(row.points || 0);
+                        totalCollection += p;
+                        
+                        let statusHTML = '';
+                        if (row.status === 'win') {
+                            const winningAmount = p * 90;
+                            totalPaying += winningAmount;
+                            statusHTML = <span class="status-minus">- ₹ ${winningAmount} (Dena Hai)</span>;
+                        } else if (row.status === 'loss') {
+                            statusHTML = <span class="status-plus">+ ₹ ${p} (Profit)</span>;
+                        } else {
+                            statusHTML = <span class="status-pending">Pending</span>;
+                        }
+
+                        tableHTML += `<tr>
+                            <td>${row.username || 'User_' + id}</td>
+                            <td>${row.bidNumber || 'N/A'}</td>
+                            <td>₹ ${p}</td>
+                            <td>${statusHTML}</td>
+                        </tr>`;
+                    }
+                });
+
+                const netProfit = totalCollection - totalPaying;
+
+                // Live Interface update render
+                ledgerBody.innerHTML = tableHTML;
+                document.getElementById('totalCollection').innerText = ₹ ${totalCollection.toLocaleString('en-IN')}.00;
+                document.getElementById('totalPaying').innerText = ₹ ${totalPaying.toLocaleString('en-IN')}.00;
+                
+                const profitElement = document.getElementById('netProfit');
+                profitElement.innerText = ₹ ${netProfit.toLocaleString('en-IN')}.00;
+                profitElement.className = netProfit >= 0 ? 'status-plus' : 'status-minus';
+            }, (error) => {
+                console.error("Database Connection Fail: ", error);
+                document.getElementById('ledgerBody').innerHTML = <tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 30px;">Connection temporary blocked. Rules allow kijiye.</td></tr>;
+            });
+        }
     </script>
 </body>
 </html>
