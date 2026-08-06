@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Number Samrat - Engine Fix</title>
+    <title>Number Samrat - Auto Wallet Engine</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { background: #0f0f0f; color: #fff; font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; }
-        .engine-box { border: 2px solid #00ff00; background: #1a1a1a; padding: 25px; border-radius: 15px; display: inline-block; width: 90%; max-width: 450px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
-        .log-box { background: #000; color: #00ff00; text-align: left; padding: 10px; font-size: 11px; height: 150px; overflow-y: auto; margin-top: 20px; border: 1px solid #333; }
-        .win-number { font-size: 50px; color: #ffff00; text-shadow: 2px 2px #ff0000; margin: 10px 0; }
+        /* Matrix Theme - Taaki aapko pata chale code badal gaya hai */
+        body { background: #000; color: #00ff00; font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; }
+        .engine-box { border: 2px solid #00ff00; background: #0a0a0a; padding: 25px; border-radius: 15px; display: inline-block; width: 95%; max-width: 500px; box-shadow: 0 0 20px #00ff00; }
+        .win-no { font-size: 60px; color: #fff; text-shadow: 0 0 10px #00ff00; margin: 15px 0; font-weight: bold; }
+        .log-box { background: #001100; border: 1px solid #004400; padding: 10px; height: 160px; overflow-y: auto; text-align: left; font-size: 12px; color: #00cc00; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="engine-box">
-        <h2 style="margin-top:0;">NUMBER SAMRAT ENGINE 🚀</h2>
-        <div id="status" style="color: #00ff00; font-weight: bold;">[ CONNECTION OK ]</div>
-        <hr style="border: 0.5px solid #333;">
+        <h1 style="letter-spacing: 3px;">NUMBER SAMRAT ENGINE</h1>
+        <div id="status" style="color: #00ff00;">[ ENGINE STATUS: BOOTING... ]</div>
+        <hr style="border: 0.5px solid #004400;">
         
-        <p style="margin-bottom:5px; color: #aaa;">LATEST WINNING NUMBER:</p>
-        <div id="win-no" class="win-number">--</div>
-        <div id="game-info" style="color: #00e5ff; font-weight: bold;">Waiting for result...</div>
+        <p style="color: #888; margin-bottom: 0;">LATEST RESULT FOUND:</p>
+        <div id="win-number" class="win-no">--</div>
+        <div id="market-name" style="font-size: 20px; color: #00e5ff; font-weight: bold;">WAITING...</div>
 
-        <div id="logs" class="log-box">Initializing System...</div>
+        <div id="logs" class="log-box">System Initializing...</div>
     </div>
 
     <script>
-        // --- APKI FIREBASE CONFIG ---
+        // --- APKI FIREBASE CONFIG (No changes) ---
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -39,64 +40,65 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function addLog(msg) {
-            const l = document.getElementById('logs');
-            l.innerHTML += "> " + msg + "<br>";
-            l.scrollTop = l.scrollHeight;
+        function addLog(m) {
+            const logs = document.getElementById('logs');
+            logs.innerHTML += "> " + m + "<br>";
+            logs.scrollTop = logs.scrollHeight;
         }
 
-        async function engineStart() {
-            addLog("Result check karne ki koshish...");
+        async function fetchMarketResults() {
+            addLog("Market scan shuru...");
+            document.getElementById('status').innerText = "[ ENGINE STATUS: MONITORING ✅ ]";
             
-            // Bypass lagakar result fetch karna
-            const proxyUrl = "https://corsproxy.io/?"; 
-            const targetUrl = "https://numbersamrat-app-2.ai-st.workers.dev/get-result";
+            // Proxy ka use taaki browser block na kare
+            const proxy = "https://api.allorigins.win/get?url=";
+            const target = encodeURIComponent("https://numbersamrat-app-2.ai-st.workers.dev/get-result");
 
             try {
-                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
-                const data = await response.json();
+                const response = await fetch(proxy + target);
+                const rawData = await response.json();
+                const data = JSON.parse(rawData.contents);
                 
                 if(data.number) {
-                    document.getElementById('win-no').innerText = data.number;
-                    document.getElementById('game-info').innerText = "GAME: " + data.game.toUpperCase();
-                    addLog("Result Mil Gaya: " + data.number);
+                    document.getElementById('win-number').innerText = data.number;
+                    document.getElementById('market-name').innerText = "MARKET: " + data.game.toUpperCase();
+                    addLog("Live Result Mil Gaya: " + data.number + " (" + data.game + ")");
                     
-                    // Wallet Update Logic Shuru
-                    processWallets(data.number, data.game);
+                    // Wallet automatic update logic
+                    settleWallets(data.number, data.game);
                 }
             } catch (err) {
-                addLog("API Error: Result abhi update nahi hua ya link down hai.");
+                addLog("Wait: Naye result ka intezar hai...");
             }
         }
 
-        async function processWallets(winningNo, game) {
-            addLog("Checking bets in database...");
-            const bets = await db.collection("bets").where("gameName", "==", game).where("status", "==", "pending").get();
+        async function settleWallets(resultNo, market) {
+            addLog("Database mein bets check ho rahi hain...");
+            const snapshot = await db.collection("bets").where("gameName", "==", market).where("status", "==", "pending").get();
 
-            if (bets.empty) {
-                addLog("Koi nai bet nahi mili.");
+            if (snapshot.empty) {
+                addLog("Is market ki koi nai bet nahi hai.");
                 return;
             }
 
-            addLog(bets.size + " Bets mili hain. Hisaab shuru...");
             const batch = db.batch();
+            addLog(snapshot.size + " Bets mili hain. Wallet update shuru...");
 
-            bets.forEach(doc => {
-                const b = doc.data();
-                const userRef = db.collection("users").doc(b.userId);
+            snapshot.forEach(doc => {
+                const bet = doc.data();
+                const userRef = db.collection("users").doc(bet.userId);
                 const khaiwalRef = db.collection("khaiwal").doc("stats");
 
-                if (b.number === winningNo) {
-                    // USER WINNER
-                    batch.update(userRef, { wallet: firebase.firestore.FieldValue.increment(b.amount * 90) });
-                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(-(b.amount * 90)) });
+                if (bet.number === resultNo) {
+                    // USER WIN: 90 Guna Paisa
+                    batch.update(userRef, { wallet: firebase.firestore.FieldValue.increment(bet.amount * 90) });
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(-(bet.amount * 90)) });
                     batch.update(doc.ref, { status: "win" });
-                    addLog("User Winner! 90x added.");
+                    addLog("Winner Updated: " + bet.userId);
                 } else {
-                    // USER LOSER
-                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(b.amount) });
+                    // USER LOSS: Khaiwal ka profit
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(bet.amount) });
                     batch.update(doc.ref, { status: "loss" });
-                    addLog("Bet Loss processed.");
                 }
             });
 
@@ -104,9 +106,9 @@
             addLog("Hisaab poora ho gaya! ✅");
         }
 
-        // Har 30 Second mein check karega
-        setInterval(engineStart, 30000);
-        engineStart();
+        // Har 30 second mein check karega
+        setInterval(fetchMarketResults, 30000);
+        fetchMarketResults();
 
     </script>
 </body>
