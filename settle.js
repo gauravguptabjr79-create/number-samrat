@@ -1,36 +1,52 @@
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-if (!admin.apps.length) {
-    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-}
-const db = admin.firestore();
+async function runEngine() {
+    console.log("--- SAMRAT ENGINE START (Fixed URL) ---");
 
-async function run() {
     try {
-        const res = await fetch("https://numbersamra-app-2.ai-st.workers.dev/get-result");
-        const data = await res.json();
+        // 1. Chabi (Secret) check
+        const keyData = process.env.FIREBASE_SERVICE_ACCOUNT;
+        if (!keyData) {
+            throw new Error("GitHub Secrets mein 'FIREBASE_SERVICE_ACCOUNT' nahi mila.");
+        }
+
+        const serviceAccount = JSON.parse(keyData);
+
+        // 2. Firebase Initialize
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+        }
+        
+        const db = admin.firestore();
+        console.log("Firebase Connected ✅");
+
+        // 3. CORRECTED URL (Spelling Check: ai.studio)
+        const URL = "https://numbersamra-app-2.ai.studio/get-result";
+        console.log("Fetching from: " + URL);
+
+        const response = await fetch(URL);
+        const data = await response.json();
 
         if (data && data.number) {
-            const winNo = data.number;
+            const winNo = String(data.number);
             const market = data.game;
-            // Line 35 Fix: Standard Quotes use kiye hain
-            console.log("Live Result: " + winNo + " (" + market + ")");
+            console.log("Result Mil Gaya: " + winNo + " for " + market);
 
             const snapshot = await db.collection("bets")
                 .where("gameName", "==", market)
                 .where("status", "==", "pending")
-                .get(); // Line 41 Fix: Faltu quote hata diya
+                .get();
 
             if (snapshot.empty) {
-                console.log("No pending bets.");
+                console.log("No pending bets found.");
                 return;
             }
 
             const batch = db.batch();
-            // Line 49 Fix: Standard Quotes use kiye hain
-            console.log("Processing " + snapshot.size + " bets...");
+            console.log("Found " + snapshot.size + " bets. Settling...");
 
             snapshot.forEach(doc => {
                 const bet = doc.data();
@@ -38,7 +54,7 @@ async function run() {
                 const sRef = db.collection("khaiwal").doc("stats");
                 const amt = parseInt(bet.amount);
 
-                if (bet.number === winNo) {
+                if (String(bet.number) === winNo) {
                     batch.update(uRef, { wallet: admin.firestore.FieldValue.increment(amt * 90) });
                     batch.update(sRef, { totalBalance: admin.firestore.FieldValue.increment(-(amt * 90)) });
                     batch.update(doc.ref, { status: "win" });
@@ -49,11 +65,14 @@ async function run() {
             });
 
             await batch.commit();
-            console.log("ALL BETS SETTLED!");
+            console.log("HISAAB POORA HO GAYA! 🏆");
+        } else {
+            console.log("API se sahi data nahi mila. Check URL.");
         }
     } catch (err) {
-        console.log("Error: " + err.message);
+        console.error("ERROR AA GAYA: " + err.message);
+        process.exit(1);
     }
 }
 
-run();
+runEngine();
