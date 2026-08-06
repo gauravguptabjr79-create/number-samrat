@@ -1,32 +1,43 @@
-<!DOCTYPE html>
+[13:45, 06/08/2026] gauravguptabjr: !DOCTYPE html>
 <html>
 <head>
-    <title>Number Samrat - Ultimate Bypass v11.0</title>
+    <title>Number Samrat - Nuclear Engine v12.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { background: #000; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; padding: 20px; }
-        .main-box { border: 3px solid #00ff00; background: #0a0a0a; padding: 30px; border-radius: 20px; display: inline-block; width: 95%; max-width: 500px; box-shadow: 0 0 25px #00ff00; }
-        .win-number { font-size: 80px; color: #fff; text-shadow: 0 0 15px #00ff00; margin: 15px 0; font-weight: bold; }
-        .terminal { background: #001100; color: #00ff00; text-align: left; padding: 15px; font-size: 11px; height: 180px; overflow-y: auto; margin-top: 20px; border: 1px solid #004400; }
-        .status-tag { border: 1px solid #00ff00; padding: 5px 15px; font-weight: bold; margin-bottom: 20px; display: inline-block; background: #003300; }
+        body { background: #000; color: #fff; font-family: 'Arial', sans-serif; text-align: center; padding: 20px; }
+        .box { border: 4px solid #ff0000; background: #111; padding: 30px; border-radius: 20px; display: inline-block; width: 95%; max-width: 500px; box-shadow: 0 0 30px #ff0000; }
+        .win-no { font-size: 80px; color: #ffff00; font-weight: bold; margin: 10px 0; }
+        .log-box { background: #000; color: #00ff00; text-align: left; padding: 15px; font-size: 11px; hei…
+[14:02, 06/08/2026] gauravguptabjr: <!DOCTYPE html>
+<html>
+<head>
+    <title>Number Samrat - Fix v16.0</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body { background: #000; color: #ffd700; font-family: 'Courier New', monospace; text-align: center; padding: 20px; }
+        .engine-card { border: 3px solid #ffd700; background: #111; padding: 30px; border-radius: 20px; display: inline-block; width: 95%; max-width: 500px; box-shadow: 0 0 20px #ffd700; }
+        .win-no { font-size: 80px; color: #fff; text-shadow: 0 0 15px #ffd700; margin: 15px 0; font-weight: bold; }
+        .log-terminal { background: #000; color: #00ff00; text-align: left; padding: 12px; font-size: 11px; height: 180px; overflow-y: auto; margin-top: 20px; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-    <div class="main-box">
-        <h1 style="letter-spacing: 5px;">ENGINE v11.0 🚀</h1>
-        <div class="status-tag">CLOUDFLARE BYPASS: ACTIVE ✅</div>
-        <hr style="border: 0.5px solid #004400;">
+    <div class="engine-card">
+        <h1>SAMRAT ENGINE v16.0 🏆</h1>
+        <div id="status" style="color: #00ff00; font-weight: bold;">[ ENGINE STATUS: ACTIVE ]</div>
+        <hr style="border: 0.5px solid #333;">
         
-        <p style="color: #888;">LATEST LIVE RESULT:</p>
-        <div id="win-number" class="win-number">--</div>
-        <div id="market-name" style="font-size: 24px; color: #00e5ff; font-weight: bold;">SCANNING...</div>
+        <p style="color: #888; margin: 0;">LATEST LIVE RESULT:</p>
+        <div id="win-number" class="win-no">--</div>
+        <div id="market-name" style="font-size: 22px; color: #00e5ff; font-weight: bold;">SCANNING...</div>
 
-        <div id="logs" class="terminal">System Initializing...</div>
+        <div id="logs" class="log-terminal">Engine starting with Line 58 & 71 fix...</div>
     </div>
 
     <script>
+        // --- FIREBASE CONFIG (No Change) ---
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -40,87 +51,76 @@
         const db = firebase.firestore();
 
         function addLog(m) {
-            const l = document.getElementById('logs');
-            l.innerHTML += "> " + m + "<br>";
-            l.scrollTop = l.scrollHeight;
+            const logs = document.getElementById('logs');
+            logs.innerHTML += "> " + m + "<br>";
+            logs.scrollTop = logs.scrollHeight;
         }
 
-        async function startEngine() {
-            addLog("Result scan shuru (High Security Bypass)...");
-            
-            // Bhai, ye aapka target hai
-            const target = "https://numbersamra-app-2.ai-studio.workers.dev/get-result";
-            const timeStamp = new Date().getTime(); // Har baar naya request
-            
-            // --- PEHLA RASTA (ThingProxy - Very Powerful) ---
-            try {
-                addLog("Trying Route 1 (ThingProxy)...");
-                const response = await fetch("https://thingproxy.freeboard.io/fetch/" + target + "?t=" + timeStamp);
-                const data = await response.json();
-                if(data && data.number) {
-                    updateSystem(data);
-                    return;
-                }
-            } catch (err) {
-                addLog("Route 1 Blocked. Trying Route 2...");
-            }
+        const TARGET_URL = "https://numbersamra-app-2.ai.studio/get-result";
 
-            // --- DUSRA RASTA (AllOrigins with Cache-Buster) ---
+        async function fetchResult() {
+            addLog("Market scan shuru...");
+            
             try {
-                addLog("Trying Route 2 (AllOrigins)...");
-                const response = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(target + "?t=" + timeStamp));
-                const res = await response.json();
-                const data = JSON.parse(res.contents);
+                // --- LINE 58: FIXED FETCH LOGIC ---
+                const response = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(TARGET_URL + "?t=" + Date.now()));
+                const raw = await response.json();
+                const data = JSON.parse(raw.contents);
+                
                 if(data && data.number) {
-                    updateSystem(data);
-                    return;
+                    document.getElementById('win-number').innerText = data.number;
+                    document.getElementById('market-name').innerText = "MARKET: " + data.game.toUpperCase();
+                    addLog("SUCCESS: Result mil gaya (" + data.number + ")");
+                    
+                    // Wallet automatic settlement
+                    processWallets(data.number, data.game);
+                } else {
+                    addLog("Status: Result abhi update nahi hua.");
                 }
             } catch (err) {
-                addLog("System Wait: Result abhi site par update nahi hua.");
+                addLog("Wait: API response ka intezar hai...");
             }
         }
 
-        function updateSystem(data) {
-            document.getElementById('win-number').innerText = data.number;
-            document.getElementById('market-name').innerText = "MARKET: " + data.game.toUpperCase();
-            addLog("SUCCESS: Live Result Found (" + data.number + ")");
-            doSettlement(data.number, data.game);
-        }
-
-        async function doSettlement(winNo, market) {
-            addLog("Database mein bets check ho rahi hain...");
+        async function processWallets(winNo, market) {
+            addLog("Database mein bets check kar rahe hain...");
             const snapshot = await db.collection("bets").where("gameName", "==", market).where("status", "==", "pending").get();
 
             if (snapshot.empty) {
-                addLog("Koi nai bet nahi mili.");
+                addLog("Is market ki koi nai bet nahi mili.");
                 return;
             }
 
             const batch = db.batch();
-            addLog(snapshot.size + " Bets ka hisaab ho raha hai...");
+            addLog(snapshot.size + " bets mili hain. Processing...");
 
-            snapshot.forEach(doc => {
+            // --- LINE 71: FIXED SNAPSHOT LOOP ---
+            snapshot.forEach((doc) => {
                 const b = doc.data();
                 const uRef = db.collection("users").doc(b.userId);
                 const kRef = db.collection("khaiwal").doc("stats");
+                const amt = parseInt(b.amount);
 
                 if (b.number === winNo) {
-                    batch.update(uRef, { wallet: firebase.firestore.FieldValue.increment(parseInt(b.amount) * 90) });
-                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(-(parseInt(b.amount) * 90)) });
+                    // Winner Update
+                    batch.update(uRef, { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
+                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
                     batch.update(doc.ref, { status: "win" });
-                    addLog("WINNER: " + b.userId);
+                    addLog("Winner Updated: " + b.userId);
                 } else {
-                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(parseInt(b.amount)) });
+                    // Loser Update
+                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(amt) });
                     batch.update(doc.ref, { status: "loss" });
                 }
             });
 
             await batch.commit();
-            addLog("HISAAB DONE! ✅");
+            addLog("HISAAB DONE! Wallets updated. ✅");
         }
 
-        setInterval(startEngine, 30000);
-        startEngine();
+        // Har 30 second mein check karega
+        setInterval(fetchResult, 30000);
+        fetchResult();
 
     </script>
 </body>
