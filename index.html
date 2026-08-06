@@ -1,152 +1,105 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>नंबर सम्राट - ऑफिशियल एंड्रॉइड ऐप डाउनलोड</title>
+    <title>Khaiwal Dashboard - Number Samrat</title>
+    
+    <!-- Firebase Engine -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
-        body {
-            background-color: #0b090a;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-        .logo-box {
-            background: linear-gradient(145deg, #1e1b1c, #141213);
-            border: 2px solid #ffb703;
-            border-radius: 20px;
-            padding: 20px;
-            display: inline-block;
-            margin-top: 20px;
-            box-shadow: 0px 4px 20px rgba(255, 183, 3, 0.3);
-        }
-        .logo-text {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffb703;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        .tagline {
-            color: #aaa;
-            font-size: 16px;
-            margin-top: 15px;
-        }
-        .features-card {
-            background: #161415;
-            border: 1px solid #2d2a2b;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 30px 0;
-            text-align: left;
-        }
-        .feature-item {
-            margin: 12px 0;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-        }
-        .feature-item span {
-            color: #00f5d4;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        /* डाउनलोड और वीआईपी बटन्स */
-        .btn {
-            width: 100%;
-            font-size: 20px;
-            font-weight: bold;
-            padding: 16px;
-            border: none;
-            border-radius: 35px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            box-shadow: 0px 5px 25px rgba(0,0,0,0.5);
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-        .download-btn {
-            background: linear-gradient(90deg, #ffb703, #fb8500);
-            color: #000000;
-        }
-        .vip-btn {
-            background: linear-gradient(90deg, #d90429, #ef233c);
-            color: #ffffff;
-        }
-        .btn:hover {
-            transform: scale(1.03);
-        }
-        .footer-text {
-            font-size: 12px;
-            color: #555;
-            margin-top: 40px;
-        }
+        body { font-family: sans-serif; background: #eef2f3; padding: 20px; text-align: center; }
+        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { width: 45%; padding: 10px; margin: 5px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #28a745; }
+        .btn-sub { background: #dc3545; }
+        #status { margin-top: 15px; color: blue; font-weight: bold; }
+        .user-info { margin-bottom: 20px; padding: 10px; border-bottom: 2px solid #eee; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- हेडर / लोगो -->
-        <div class="logo-box">
-            <p class="logo-text">👑 नंबर सम्राट</p>
-        </div>
-        <p class="tagline">सबसे तेज़ लाइव रिज़ल्ट्स और सुपर लीक जोड़ी ऐप</p>
+    <div class="box">
+        <h2>Khaiwal Dashboard</h2>
+        <p>Number Samrat App</p>
 
-        <!-- ऐप के खास फीचर्स -->
-        <div class="features-card">
-            <div class="feature-item"><span>⚡</span> 100% सुपरफ़ास्ट लाइव रिज़ल्ट्स</div>
-            <div class="feature-item"><span>📊</span> सभी 119+ मार्केट्स एक ही जगह</div>
-            <div class="feature-item"><span>🔔</span> नंबर खुलते ही ऑटो-नोटिफ़िकेशन</div>
-            <div class="feature-item"><span>🔒</span> 100% सेफ और सिक्योर एंड्रॉइड ऐप</div>
+        <div class="user-info">
+            <input type="text" id="userId" placeholder="User Name (e.g. Rahul)">
+            <p>Current Balance: <span id="currentBal">0</span></p>
         </div>
 
-        <!-- मुख्य डाउनलोड बटन -->
-        <!-- ApkCreator ka redirection link jo bina link kharab kiye download karwayega -->
-        <a href="/numbersamrat.apk" class="btn download-btn" target="_blank" id="apkDownloadLink">
-            📥 ऑफिशियल ऐप डाउनलोड करें (.apk)
-        </a>
-<!-- नंबर सम्राट रिचार्ज और विड्रॉल सेक्शन (फाइनल चालू कोड) -->
-<div style="text-align: center; margin: 25px 0; font-family: sans-serif;">
-    
-    <!-- 1. रिचार्ज बटन -->
-    <label style="display: block; font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #fff;">
-        💸 मनमुताबिक राशि रिचार्ज करें (नंबर सम्राट)
-    </label>
-    <a href="https://zyphorapay.com/payment?key=tXLHsqbZjUyOd8hFQ7LTtdn6pcmVgIytjjzgWQ8t" 
-       target="_blank" 
-       style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #28a745, #218838); color: white; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px;">
-        💸 सुरक्षित रिचार्ज करें
-    </a>
+        <input type="number" id="points" placeholder="Enter Points">
+        <br>
+        <button class="btn-add" onclick="updatePoints('ADD')">Add Points (+)</button>
+        <button class="btn-sub" onclick="updatePoints('SUB')">Sub Points (-)</button>
 
-    <br>
-
-    <!-- 2. विड्रॉल बटन (सही नंबर 7428919416 सेट है) -->
-    <label style="display: block; font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #fff;">
-        🏦 जीते हुए पैसे बैंक में निकालें
-    </label>
-    <a href="https://wa.me" 
-       target="_blank" 
-       style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #dc3545, #bd2130); color: white; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
-        🏦 पैसे निकालें (Withdrawal)
-    </a>
-
-</div>
-        <!-- सुरक्षित वीआईपी बुकिंग बटन (Direct WhatsApp Payment Gateway) -->
-        <a href="https://wa.me." class="btn vip-btn" target="_blank" id="whatsappVipLink">
-            👑 ज्वाइन वीआईपी मेम्बरशिप (व्हाट्सएप)
-        </a>
-   
-        <p class="footer-text">वर्ज़न: v1.0.4 (Latest) | केवल एंड्रॉइड फ़ोन्स के लिए</p>
+        <div id="status">Ready...</div>
     </div>
 
+    <script>
+        // Aapki Firebase Settings (Jo photo mein thi)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
+            authDomain: "number-samrat.firebaseapp.com",
+            databaseURL: "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "number-samrat",
+            storageBucket: "number-samrat.firebasestorage.app",
+            messagingSenderId: "154722781783",
+            appId: "1:154722781783:web:7bb136ce1c34a11b3f112"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Points Update karne ka function
+        function updatePoints(type) {
+            const uId = document.getElementById('userId').value;
+            const pts = document.getElementById('points').value;
+            const status = document.getElementById('status');
+
+            if (!uId || !pts) {
+                alert("Pahle Name aur Points bharo!");
+                return;
+            }
+
+            status.innerText = "Updating...";
+
+            const userRef = db.ref('users/' + uId);
+            
+            userRef.transaction((currentData) => {
+                let currentBal = (currentData && currentData.wallet_balance) ? currentData.wallet_balance : 0;
+                
+                if (type === 'ADD') {
+                    return { wallet_balance: parseFloat(currentBal) + parseFloat(pts) };
+                } else {
+                    return { wallet_balance: parseFloat(currentBal) - parseFloat(pts) };
+                }
+            }).then(() => {
+                status.innerText = "Success! Points Updated.";
+                document.getElementById('points').value = "";
+                showBalance(uId);
+            }).catch((err) => {
+                status.innerText = "Error: " + err.message;
+            });
+        }
+
+        // Live Balance dikhane ke liye
+        function showBalance(name) {
+            db.ref('users/' + name).on('value', (snap) => {
+                if(snap.exists()){
+                    document.getElementById('currentBal').innerText = snap.val().wallet_balance;
+                }
+            });
+        }
+
+        // Jab name type karein to balance dikhaye
+        document.getElementById('userId').oninput = function() {
+            showBalance(this.value);
+        };
+    </script>
 </body>
 </html>
