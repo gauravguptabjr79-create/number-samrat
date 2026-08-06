@@ -2,7 +2,7 @@ name: Number Samrat Auto Settle
 on:
   schedule:
     - cron: '*/5 * * * *' # Har 5 minute mein khud chalega
-  workflow_dispatch: # Manual chalane ke liye button
+  workflow_dispatch: # Manual button
 
 jobs:
   settle-job:
