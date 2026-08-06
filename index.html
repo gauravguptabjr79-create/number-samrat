@@ -131,3 +131,41 @@
     </script>
 </body>
 </html>
+// --- BOLI LAGANE KA SAHI LOGIC (TRANSACTION SE) ---
+function placeBid() {
+    const name = document.getElementById('userName').value;
+    const num = document.getElementById('bidNumber').value;
+    const pts = document.getElementById('bidPoints').value;
+
+    if(!name || !num || !pts) return alert("Pahle saari details bharo!");
+    const bidAmount = parseFloat(pts);
+
+    if (bidAmount <= 0) return alert("Sahi amount daalo!");
+
+    const userRef = db.ref('users/' + name + '/wallet_balance');
+
+    // Transaction se balance check aur deduct karna (Safe Tarika)
+    userRef.transaction((currentBal) => {
+        if (currentBal === null) return 0; // Agar user nahi hai
+        if (currentBal < bidAmount) {
+            return; // Balance kam hai to transaction cancel
+        }
+        return currentBal - bidAmount;
+    }, (error, committed, snapshot) => {
+        if (error) {
+            alert("Error: Connection slow hai.");
+        } else if (!committed) {
+            alert("Balance kam hai! Khaiwal se recharge karwayein.");
+        } else {
+            // Agar balance kat gaya, toh Boli (Bid) save karo
+            db.ref('bids/' + name).push({
+                number: num,
+                amount: bidAmount,
+                time: new Date().toLocaleTimeString()
+            });
+            alert("Boli Lag Gayi! Balance Kat Gaya.");
+            document.getElementById('bidNumber').value = "";
+            document.getElementById('bidPoints').value = "";
+        }
+    });
+}
