@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://numbersamrat.online/sitemap.xml
