@@ -3,44 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khaiwal Dashboard - Number Samrat</title>
-    
-    <!-- Firebase Engine -->
+    <title>Number Samrat - Master Admin</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
-        body { font-family: sans-serif; background: #eef2f3; padding: 20px; text-align: center; }
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        button { width: 45%; padding: 10px; margin: 5px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
-        .btn-add { background: #28a745; }
-        .btn-sub { background: #dc3545; }
-        #status { margin-top: 15px; color: blue; font-weight: bold; }
-        .user-info { margin-bottom: 20px; padding: 10px; border-bottom: 2px solid #eee; }
+        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
+        .box { background: #1e1e1e; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; border: 1px solid #333; }
+        .live-card { background: #ccff00; color: black; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 20px; }
+        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; background: #333; color: white; }
+        button { width: 46%; padding: 12px; margin: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-sub { background: #dc3545; color: white; }
+        #log { font-size: 12px; color: #aaa; margin-top: 15px; padding: 10px; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="box">
-        <h2>Khaiwal Dashboard</h2>
-        <p>Number Samrat App</p>
-
-        <div class="user-info">
-            <input type="text" id="userId" placeholder="User Name (e.g. Rahul)">
-            <p>Current Balance: <span id="currentBal">0</span></p>
+        <div class="live-card">
+            <span id="marketName">Loading Market...</span> <br>
+            <span style="font-size: 40px;" id="liveNum">--</span>
         </div>
 
-        <input type="number" id="points" placeholder="Enter Points">
-        <br>
-        <button class="btn-add" onclick="updatePoints('ADD')">Add Points (+)</button>
-        <button class="btn-sub" onclick="updatePoints('SUB')">Sub Points (-)</button>
+        <h3>Khaiwal Management</h3>
+        <input type="text" id="userId" placeholder="Enter User Name">
+        <p>Current Balance: ₹<span id="currentBal" style="color: #ccff00; font-size: 20px;">0</span></p>
+        
+        <input type="number" id="points" placeholder="Enter Points (Amt)">
+        <button class="btn-add" onclick="updatePoints('ADD')">ADD POINTS (+)</button>
+        <button class="btn-sub" onclick="updatePoints('SUB')">SUB POINTS (-)</button>
 
-        <div id="status">Ready...</div>
+        <div id="log">System Status: Checking Firebase...</div>
     </div>
 
     <script>
-        // Aapki Firebase Settings (Jo photo mein thi)
+        // Aapka Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -51,54 +49,78 @@
             appId: "1:154722781783:web:7bb136ce1c34a11b3f112"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Points Update karne ka function
+        // --- STEP 1: AUTO SETUP FIREBASE (If empty) ---
+        function setupDatabase() {
+            db.ref('live_result').once('value', (snap) => {
+                if (!snap.exists()) {
+                    db.ref('live_result').set({
+                        current_number: "00",
+                        market_name: "Gali"
+                    });
+                    document.getElementById('log').innerText = "Database Initialized!";
+                }
+            });
+        }
+        setupDatabase();
+
+        // --- STEP 2: LIVE NUMBER FETCHING ---
+        async function fetchLiveNumber() {
+            const targetUrl = "https://numbersamra-app-2.ai.studio";
+            const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+
+            try {
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                const html = data.contents;
+
+                // Simple logic to find the first 2-digit number in your URL
+                const match = html.match(/\b\d{2}\b/); 
+                if (match) {
+                    const newNumber = match[0];
+                    db.ref('live_result/current_number').set(newNumber);
+                    document.getElementById('log').innerText = "Live Update: " + new Date().toLocaleTimeString();
+                }
+            } catch (err) {
+                document.getElementById('log').innerText = "Fetching... (Wait 30s)";
+            }
+        }
+
+        // Display Data in Real-time
+        db.ref('live_result/current_number').on('value', (snap) => {
+            document.getElementById('liveNum').innerText = snap.val();
+        });
+        db.ref('live_result/market_name').on('value', (snap) => {
+            document.getElementById('marketName').innerText = snap.val();
+        });
+
+        // Fetch every 30 seconds
+        setInterval(fetchLiveNumber, 30000);
+        fetchLiveNumber();
+
+        // --- STEP 3: WALLET LOGIC ---
         function updatePoints(type) {
             const uId = document.getElementById('userId').value;
             const pts = document.getElementById('points').value;
-            const status = document.getElementById('status');
-
-            if (!uId || !pts) {
-                alert("Pahle Name aur Points bharo!");
-                return;
-            }
-
-            status.innerText = "Updating...";
+            if (!uId || !pts) return alert("Pahle Name aur Points bharo!");
 
             const userRef = db.ref('users/' + uId);
-            
             userRef.transaction((currentData) => {
-                let currentBal = (currentData && currentData.wallet_balance) ? currentData.wallet_balance : 0;
-                
-                if (type === 'ADD') {
-                    return { wallet_balance: parseFloat(currentBal) + parseFloat(pts) };
-                } else {
-                    return { wallet_balance: parseFloat(currentBal) - parseFloat(pts) };
-                }
+                let bal = (currentData && currentData.wallet_balance) ? currentData.wallet_balance : 0;
+                return { wallet_balance: (type === 'ADD') ? (parseFloat(bal) + parseFloat(pts)) : (parseFloat(bal) - parseFloat(pts)) };
             }).then(() => {
-                status.innerText = "Success! Points Updated.";
+                alert("Done!");
                 document.getElementById('points').value = "";
-                showBalance(uId);
-            }).catch((err) => {
-                status.innerText = "Error: " + err.message;
             });
         }
 
-        // Live Balance dikhane ke liye
-        function showBalance(name) {
-            db.ref('users/' + name).on('value', (snap) => {
-                if(snap.exists()){
-                    document.getElementById('currentBal').innerText = snap.val().wallet_balance;
-                }
-            });
-        }
-
-        // Jab name type karein to balance dikhaye
+        // Show balance on typing name
         document.getElementById('userId').oninput = function() {
-            showBalance(this.value);
+            db.ref('users/' + this.value).on('value', (snap) => {
+                document.getElementById('currentBal').innerText = snap.exists() ? snap.val().wallet_balance : 0;
+            });
         };
     </script>
 </body>
