@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Number Samrat - Debug Mode</title>
+    <title>Number Samrat - Engine Fix</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { background: #121212; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
-        .box { border: 2px solid #333; padding: 20px; border-radius: 10px; background: #1e1e1e; display: inline-block; width: 90%; max-width: 400px; }
-        .error-log { color: #ff5252; background: #000; padding: 10px; margin-top: 20px; text-align: left; font-size: 12px; border-left: 4px solid red; }
+        body { background: #0f0f0f; color: #fff; font-family: 'Courier New', Courier, monospace; text-align: center; padding: 20px; }
+        .engine-box { border: 2px solid #00ff00; background: #1a1a1a; padding: 25px; border-radius: 15px; display: inline-block; width: 90%; max-width: 450px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        .log-box { background: #000; color: #00ff00; text-align: left; padding: 10px; font-size: 11px; height: 150px; overflow-y: auto; margin-top: 20px; border: 1px solid #333; }
+        .win-number { font-size: 50px; color: #ffff00; text-shadow: 2px 2px #ff0000; margin: 10px 0; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Number Samrat Engine</h2>
-        <p id="status" style="color: orange;">Checking Connection...</p>
-        <hr>
-        <p>Live Result: <b id="win-no" style="color: #4caf50; font-size: 24px;">--</b></p>
-        <p id="game-name" style="color: gray;">Waiting...</p>
+
+    <div class="engine-box">
+        <h2 style="margin-top:0;">NUMBER SAMRAT ENGINE 🚀</h2>
+        <div id="status" style="color: #00ff00; font-weight: bold;">[ CONNECTION OK ]</div>
+        <hr style="border: 0.5px solid #333;">
         
-        <div id="error-display" class="error-log">Logs will appear here...</div>
+        <p style="margin-bottom:5px; color: #aaa;">LATEST WINNING NUMBER:</p>
+        <div id="win-no" class="win-number">--</div>
+        <div id="game-info" style="color: #00e5ff; font-weight: bold;">Waiting for result...</div>
+
+        <div id="logs" class="log-box">Initializing System...</div>
     </div>
 
     <script>
-        // Apki Real Config
+        // --- APKI FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -32,52 +36,78 @@
             appId: "1:154722781783:web:7b6136cec1c34a11b3f112"
         };
 
-        function showLog(msg) {
-            document.getElementById('error-display').innerHTML += "<br>> " + msg;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function addLog(msg) {
+            const l = document.getElementById('logs');
+            l.innerHTML += "> " + msg + "<br>";
+            l.scrollTop = l.scrollHeight;
         }
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore();
-            document.getElementById('status').innerText = "Firebase Connected! ✅";
-            showLog("Firebase initialized successfully.");
+        async function engineStart() {
+            addLog("Result check karne ki koshish...");
+            
+            // Bypass lagakar result fetch karna
+            const proxyUrl = "https://corsproxy.io/?"; 
+            const targetUrl = "https://numbersamrat-app-2.ai-st.workers.dev/get-result";
 
-            async function checkEngine() {
-                showLog("Fetching result from API...");
-                try {
-                    const r = await fetch("https://numbersamrat-app-2.ai-st.workers.dev/get-result");
-                    const data = await r.json();
+            try {
+                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+                const data = await response.json();
+                
+                if(data.number) {
+                    document.getElementById('win-no').innerText = data.number;
+                    document.getElementById('game-info').innerText = "GAME: " + data.game.toUpperCase();
+                    addLog("Result Mil Gaya: " + data.number);
                     
-                    if(data.number) {
-                        document.getElementById('win-no').innerText = data.number;
-                        document.getElementById('game-name').innerText = "Game: " + data.game;
-                        showLog("Result Found: " + data.number + ". Checking for Winners...");
-                        
-                        // Yahan se winner update logic shuru hota hai
-                        processWinners(data.number, data.game);
-                    }
-                } catch(e) {
-                    showLog("API Error: " + e.message);
+                    // Wallet Update Logic Shuru
+                    processWallets(data.number, data.game);
                 }
+            } catch (err) {
+                addLog("API Error: Result abhi update nahi hua ya link down hai.");
             }
-
-            async function processWinners(num, game) {
-                const snapshot = await db.collection("bets").where("gameName", "==", game).where("status", "==", "pending").get();
-                if(snapshot.empty) {
-                    showLog("No pending bets to process.");
-                } else {
-                    showLog("Found " + snapshot.size + " bets. Updating wallets...");
-                    // ... (Wallet update logic)
-                }
-            }
-
-            setInterval(checkEngine, 30000);
-            checkEngine();
-
-        } catch (err) {
-            showLog("CRITICAL ERROR: " + err.message);
-            document.getElementById('status').innerText = "Connection Failed! ❌";
         }
+
+        async function processWallets(winningNo, game) {
+            addLog("Checking bets in database...");
+            const bets = await db.collection("bets").where("gameName", "==", game).where("status", "==", "pending").get();
+
+            if (bets.empty) {
+                addLog("Koi nai bet nahi mili.");
+                return;
+            }
+
+            addLog(bets.size + " Bets mili hain. Hisaab shuru...");
+            const batch = db.batch();
+
+            bets.forEach(doc => {
+                const b = doc.data();
+                const userRef = db.collection("users").doc(b.userId);
+                const khaiwalRef = db.collection("khaiwal").doc("stats");
+
+                if (b.number === winningNo) {
+                    // USER WINNER
+                    batch.update(userRef, { wallet: firebase.firestore.FieldValue.increment(b.amount * 90) });
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(-(b.amount * 90)) });
+                    batch.update(doc.ref, { status: "win" });
+                    addLog("User Winner! 90x added.");
+                } else {
+                    // USER LOSER
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(b.amount) });
+                    batch.update(doc.ref, { status: "loss" });
+                    addLog("Bet Loss processed.");
+                }
+            });
+
+            await batch.commit();
+            addLog("Hisaab poora ho gaya! ✅");
+        }
+
+        // Har 30 Second mein check karega
+        setInterval(engineStart, 30000);
+        engineStart();
+
     </script>
 </body>
 </html>
