@@ -1,118 +1,79 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Samrat - Secure Login</title>
-    <!-- Firebase Libraries -->
+    <title>Login - Number Samrat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
-        .logo { font-size: 24px; font-weight: bold; color: #1e3799; margin-bottom: 10px; }
-        p { color: #666; font-size: 14px; margin-bottom: 25px; }
-        
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { font-size: 12px; font-weight: bold; color: #444; margin-left: 5px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-top: 5px; outline: none; }
-        input:focus { border-color: #1e3799; }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        .btn-send { background: #1e3799; color: white; }
-        .btn-verify { background: #27ae60; color: white; display: none; }
-        
-        #otp-section { display: none; margin-top: 20px; }
-        #recaptcha-container { margin-top: 15px; }
-        .loader { font-size: 12px; color: #1e3799; display: none; margin-top: 10px; }
+        body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .toggle { margin-top: 15px; font-size: 14px; color: #666; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <div class="logo">👑 NUMBER SAMRAT</div>
-        <p>Khaiwal Login: OTP Verification</p>
+<div class="login-card">
+    <h2 id="title">User Login</h2>
+    <input type="text" id="phone" placeholder="Mobile Number / Username">
+    <input type="password" id="pass" placeholder="Password">
+    <button onclick="handleLogin()">Login Now</button>
+    <p class="toggle" onclick="toggleRole()" id="toggleBtn">Login as Khaiwal?</p>
+</div>
 
-        <!-- Phone Number Input -->
-        <div id="phone-section">
-            <div class="input-group">
-                <label>Mobile Number (+91)</label>
-                <input type="tel" id="phoneNumber" placeholder="9876543210" maxlength="10">
-            </div>
-            <div id="recaptcha-container"></div>
-            <button class="btn btn-send" onclick="sendOTP()">OTP Bhejein</button>
-        </div>
+<script>
+    // --- FIREBASE CONFIG ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
+        authDomain: "number-samrat.firebaseapp.com",
+        projectId: "number-samrat",
+        storageBucket: "number-samrat.firebasestorage.app",
+        messagingSenderId: "154722781783",
+        appId: "1:154722781783:web:7b6136cec1c34a11b3f112"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        <!-- OTP Input -->
-        <div id="otp-section">
-            <div class="input-group">
-                <label>Enter 6-Digit OTP</label>
-                <input type="number" id="otpCode" placeholder="000000">
-            </div>
-            <button class="btn btn-verify" id="verifyBtn" onclick="verifyOTP()">Verify & Login</button>
-        </div>
+    let role = "user"; // Default role
 
-        <div class="loader" id="loader">Processing... Kripya intezar karein.</div>
-    </div>
-
-    <script>
-        // 1. Apna Firebase Config Yahan Dalein (Zaroori)
-        const firebaseConfig = {
-            apiKey: "AIzaSy...", // Firebase console se copy karein
-            authDomain: "number-samrat.firebaseapp.com",
-            projectId: "number-samrat",
-            storageBucket: "number-samrat.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        let confirmationResult;
-
-        // Recaptcha initialize karein
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'invisible'
-        });
-
-        // OTP Bhejne ka function
-        function sendOTP() {
-            const phone = "+91" + document.getElementById('phoneNumber').value;
-            if (phone.length < 13) { alert("Sahi mobile number dalein!"); return; }
-
-            document.getElementById('loader').style.display = 'block';
-            const appVerifier = window.recaptchaVerifier;
-
-            firebase.auth().signInWithPhoneNumber(phone, appVerifier)
-                .then((result) => {
-                    confirmationResult = result;
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('phone-section').style.display = 'none';
-                    document.getElementById('otp-section').style.display = 'block';
-                    document.getElementById('verifyBtn').style.display = 'block';
-                    alert("OTP aapke mobile par bhej diya gaya hai.");
-                }).catch((error) => {
-                    alert("Error: " + error.message);
-                    document.getElementById('loader').style.display = 'none';
-                });
+    function toggleRole() {
+        if(role === "user") {
+            role = "admin";
+            document.getElementById("title").innerText = "Khaiwal Login";
+            document.getElementById("toggleBtn").innerText = "Login as User?";
+        } else {
+            role = "user";
+            document.getElementById("title").innerText = "User Login";
+            document.getElementById("toggleBtn").innerText = "Login as Khaiwal?";
         }
+    }
 
-        // OTP Verify karne ka function
-        function verifyOTP() {
-            const code = document.getElementById('otpCode').value;
-            if (code.length !== 6) { alert("6-digit OTP dalein!"); return; }
+    async function handleLogin() {
+        const input = document.getElementById("phone").value;
+        const password = document.getElementById("pass").value;
 
-            document.getElementById('loader').style.display = 'block';
-            confirmationResult.confirm(code).then((result) => {
-                // Login Success!
-                alert("Login Safal Hua!");
-                window.location.href = "khaiwal.html"; // Yahan dashboard ka link dalein
-            }).catch((error) => {
-                alert("Galat OTP! Fir se koshish karein.");
-                document.getElementById('loader').style.display = 'none';
-            });
+        if(role === "user") {
+            // User Login Logic
+            const snapshot = await db.collection("users").where("phone", "==", input).where("password", "==", password).get();
+            if(!snapshot.empty) {
+                const userId = snapshot.docs[0].id;
+                localStorage.setItem("userId", userId); // ID phone mein save ho jayegi
+                window.location.href = "users.html";
+            } else {
+                alert("Galat Details!");
+            }
+        } else {
+            // Khaiwal Login Logic
+            const snapshot = await db.collection("admins").where("username", "==", input).where("password", "==", password).get();
+            if(!snapshot.empty) {
+                window.location.href = "khaiwal.html";
+            } else {
+                alert("Admin Access Denied!");
+            }
         }
-    </script>
+    }
+</script>
 </body>
 </html>
