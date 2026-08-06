@@ -1,80 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-    <title>Login - Number Samrat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 1. GOOGLE VERIFICATION (Maine Fit kar diya hai) -->
+    <meta name="google-site-verification" content="cixluxiwz_cpTypsQw5OGqOPEtbM0WVS3IeW-W78C9E" />
+
+    <title>Number Samrat | Gali Desawar Live Result | Satta King Chart</title>
+    <meta name="description" content="Number Samrat par payein sabse tez Gali, Desawar, Faridabad aur Ghaziabad ke live result. India ka sabse bharosemand automatic betting system.">
+    <meta name="keywords" content="number samrat, numbersamrat.online, gali result, desawar chart, satta king fastest result">
+
     <style>
-        body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .toggle { margin-top: 15px; font-size: 14px; color: #666; cursor: pointer; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; text-align: center; }
+        .hero { padding: 50px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 3px solid #fbbf24; }
+        h1 { color: #fbbf24; font-size: 2.8rem; margin-bottom: 10px; text-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+        .tagline { color: #94a3b8; font-size: 1.1rem; margin-bottom: 30px; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-bottom: 40px; }
+        .btn { width: 85%; max-width: 320px; padding: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.2rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-login { background: #3b82f6; color: white; }
+        .btn-reg { background: #10b981; color: white; }
+        .btn-apk { background: #fbbf24; color: black; }
+        .btn:hover { transform: translateY(-3px); opacity: 0.9; }
+
+        .result-container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .res-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; }
+        .res-table th, .res-table td { border: 1px solid #334155; padding: 15px; font-size: 1.1rem; }
+        .res-table th { background: #334155; color: #fbbf24; text-transform: uppercase; }
+        .market-name { font-weight: bold; color: #cbd5e1; }
+        .market-num { color: #22c55e; font-weight: 800; font-size: 1.6rem; }
+
+        footer { padding: 30px; color: #475569; font-size: 0.8rem; border-top: 1px solid #1e293b; margin-top: 40px; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2 id="title">User Login</h2>
-    <input type="text" id="phone" placeholder="Mobile Number / Username">
-    <input type="password" id="pass" placeholder="Password">
-    <button onclick="handleLogin()">Login Now</button>
-    <p class="toggle" onclick="toggleRole()" id="toggleBtn">Login as Khaiwal?</p>
-</div>
+    <div class="hero">
+        <h1>Number Samrat 👑</h1>
+        <p class="tagline">India ka Sabse Tez Live Result aur Auto-Settle System</p>
+        
+        <div class="btn-group">
+            <a href="login.html" class="btn btn-login">Login Account</a>
+            <a href="signup.html" class="btn btn-reg">Register New</a>
+            <a href="numbersamrat.apk" class="btn btn-apk">⬇️ Download Official APK</a>
+        </div>
+    </div>
 
-<script>
-    // --- FIREBASE CONFIG ---
-    const firebaseConfig = const firebaseConfig = {
-  apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
-  authDomain: "number-samrat.firebaseapp.com",
-  databaseURL: "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "number-samrat",
-  storageBucket: "number-samrat.firebasestorage.app",
-  messagingSenderId: "154722781783",
-  appId: "1:154722781783:web:90d8858df0197e67b3f112"
-};
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <div class="result-container">
+        <h2 style="color: #fbbf24; margin-bottom: 20px;">Live Results Today</h2>
+        <table class="res-table">
+            <thead>
+                <tr><th>Market</th><th>Result</th><th>Time</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="market-name">DESAWAR</td><td class="market-num">--</td><td>05:00 AM</td></tr>
+                <tr><td class="market-name">FARIDABAD</td><td class="market-num">--</td><td>06:00 PM</td></tr>
+                <tr><td class="market-name">GHAZIABAD</td><td class="market-num">--</td><td>08:15 PM</td></tr>
+                <tr><td class="market-name">GALI</td><td class="market-num">--</td><td>11:50 PM</td></tr>
+            </tbody>
+        </table>
+    </div>
 
-    let role = "user"; // Default role
+    <div style="padding: 20px; text-align: left; max-width: 600px; margin: 0 auto; color: #94a3b8; font-size: 0.9rem;">
+        <h3>About Number Samrat Online</h3>
+        <p>Hamari website par aapko milenge sabse tez Gali result, Desawar chart aur Faridabad Ghaziabad ki live updates. Hamara system poori tarah automatic hai, jahan result aate hi winners ko unka paisa turant mil jata hai.</p>
+    </div>
 
-    function toggleRole() {
-        if(role === "user") {
-            role = "admin";
-            document.getElementById("title").innerText = "Khaiwal Login";
-            document.getElementById("toggleBtn").innerText = "Login as User?";
-        } else {
-            role = "user";
-            document.getElementById("title").innerText = "User Login";
-            document.getElementById("toggleBtn").innerText = "Login as Khaiwal?";
-        }
-    }
+    <footer>
+        © 2024 Number Samrat Management. Entertainment Purpose Only.
+    </footer>
 
-    async function handleLogin() {
-        const input = document.getElementById("phone").value;
-        const password = document.getElementById("pass").value;
-
-        if(role === "user") {
-            // User Login Logic
-            const snapshot = await db.collection("users").where("phone", "==", input).where("password", "==", password).get();
-            if(!snapshot.empty) {
-                const userId = snapshot.docs[0].id;
-                localStorage.setItem("userId", userId); // ID phone mein save ho jayegi
-                window.location.href = "users.html";
-            } else {
-                alert("Galat Details!");
-            }
-        } else {
-            // Khaiwal Login Logic
-            const snapshot = await db.collection("admins").where("username", "==", input).where("password", "==", password).get();
-            if(!snapshot.empty) {
-                window.location.href = "khaiwal.html";
-            } else {
-                alert("Admin Access Denied!");
-            }
-        }
-    }
-</script>
 </body>
 </html>
