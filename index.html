@@ -1,45 +1,45 @@
-<!DOCTYPE html>
+DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="cixluxiwz_cpTypsQw5OGqOPEtbM0WVS3IeW-W78C9E" />
-    <title>Number Samrat | Live Result | Satta King Chart</title>
+    <title>Number Samrat | Live Result | India's #1 System</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; text-align: center; }
-        .hero { padding: 40px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 2px solid #fbbf24; }
-        h1 { color: #fbbf24; font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
-        .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; margin: 25px 0; }
-        .btn { width: 85%; max-width: 300px; padding: 14px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.1rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .btn-login { background: #3b82f6; color: white; }
-        .btn-reg { background: #10b981; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; text-align: center; }
+        .hero { padding: 50px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 2px solid #fbbf24; }
+        h1 { color: #fbbf24; font-size: 2.8rem; margin: 0; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 30px 0; }
+        .btn { width: 85%; max-width: 300px; padding: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.1rem; display: block; color: white; transition: 0.3s; }
+        .btn-login { background: #3b82f6; }
+        .btn-reg { background: #10b981; }
         .btn-apk { background: #fbbf24; color: black; }
         
-        .result-container { padding: 20px; max-width: 500px; margin: 0 auto; }
-        .res-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; }
-        .res-table th, .res-table td { border: 1px solid #334155; padding: 15px; font-size: 1.1rem; }
+        .result-box { padding: 20px; max-width: 500px; margin: 0 auto; }
+        .res-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .res-table th, .res-table td { border: 1px solid #334155; padding: 15px; }
         .res-table th { background: #334155; color: #fbbf24; }
         .market-num { color: #22c55e; font-weight: 800; font-size: 1.8rem; }
         
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0.2; } }
-        #status { font-size: 10px; color: #475569; margin-top: 10px; }
+        .blink { animation: blinker 1s linear infinite; color: #fbbf24; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+        #status-log { font-size: 10px; color: #475569; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div class="hero">
         <h1>Number Samrat 👑</h1>
-        <p style="color:#94a3b8;">India's Fastest Auto-Settle Platform</p>
+        <p style="color:#94a3b8;">Fastest Auto-Settle System in India</p>
         <div class="btn-group">
-            <a href="login.html" class="btn btn-login">Login Account</a>
-            <a href="signup.html" class="btn btn-reg">Register Now</a>
+            <a href="login.html" class="btn btn-login">Login</a>
+            <a href="signup.html" class="btn btn-reg">Register</a>
             <a href="numbersamrat.apk" class="btn btn-apk">⬇️ Download APK</a>
         </div>
     </div>
 
-    <div class="result-container">
-        <h2 style="color: #fbbf24;">Live Results</h2>
+    <div class="result-box">
+        <h2 style="color: #fbbf24;">Today's Live Results</h2>
         <table class="res-table">
             <thead><tr><th>Market</th><th>Result</th></tr></thead>
             <tbody>
@@ -49,48 +49,50 @@
                 <tr><td>GALI</td><td id="res-GALI" class="market-num">--</td></tr>
             </tbody>
         </table>
-        <div id="status">Scanning for live numbers...</div>
+        <div id="status-log">Scanning live numbers...</div>
     </div>
 
     <script>
-        async function getLiveResult() {
-            const api = "https://numbersamra-app-2.ai.studio/get-result";
-            // 3 alag raste taaki fail na ho
+        async function fetchLiveResults() {
+            // Bhai, URL ekdam sahi kar diya hai
+            const TARGET_URL = "https://numbersamra-app-2.ai.studio";
+            
+            // 2 alag proxies taaki failure ka chance na rahe
             const routes = [
-                api,
-                "https://api.allorigins.win/get?url=" + encodeURIComponent(api + "?t=" + Date.now()),
-                "https://corsproxy.io/?" + encodeURIComponent(api)
+                "https://api.allorigins.win/get?url=" + encodeURIComponent(TARGET_URL + "?t=" + Date.now()),
+                "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(TARGET_URL)
             ];
 
-            for (let url of routes) {
+            for (let r of routes) {
                 try {
-                    const response = await fetch(url);
-                    const resData = await response.json();
+                    const response = await fetch(r);
+                    const raw = await response.json();
                     
-                    // AllOrigins ka data 'contents' mein hota hai
-                    const data = resData.contents ? JSON.parse(resData.contents) : resData;
+                    // Proxy se data nikalne ka logic
+                    const data = (raw.contents) ? JSON.parse(raw.contents) : raw;
 
-                    if (data && data.number) {
+                    if(data && data.number) {
                         const market = data.game.toUpperCase();
                         const num = data.number;
-                        
-                        // Table update
+
+                        // Table mein number chipkana
                         const cell = document.getElementById("res-" + market);
                         if (cell) {
                             cell.innerText = num;
                             cell.classList.add("blink");
-                            document.getElementById("status").innerText = "Updated: " + market;
-                            return; // Success!
+                            document.getElementById('status-log').innerText = "Live: " + market + " updated.";
+                            return; // Ek route chal gaya toh break
                         }
                     }
-                } catch (e) { 
-                    console.log("Route failed, trying next..."); 
+                } catch (err) {
+                    console.log("Rasta block hai, dusra try kar rahe hain...");
                 }
             }
         }
 
-        setInterval(getLiveResult, 30000); // Har 30 sec mein check
-        getLiveResult();
+        // Har 30 second mein automatic update
+        setInterval(fetchLiveResults, 30000);
+        fetchLiveResults();
     </script>
 </body>
 </html>
