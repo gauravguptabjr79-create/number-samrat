@@ -1,43 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Number Samrat - Master Engine v17.0</title>
+    <title>Number Samrat - Final Fix v19.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { background: #000; color: #ffd700; font-family: 'Arial', sans-serif; text-align: center; padding: 20px; }
-        .main-card { border: 3px solid #ffd700; background: #111; padding: 30px; border-radius: 20px; display: inline-block; width: 95%; max-width: 500px; box-shadow: 0 0 25px rgba(255,215,0,0.3); }
-        .result-circle { font-size: 70px; color: #fff; text-shadow: 0 0 15px #ffd700; margin: 15px 0; font-weight: bold; }
-        .manual-section { background: #222; padding: 20px; border-radius: 15px; margin-top: 25px; border: 1px solid #444; }
-        .input-box { padding: 10px; width: 80px; font-size: 18px; text-align: center; border-radius: 5px; border: 1px solid #ffd700; background: #000; color: #fff; margin: 5px; }
-        .action-btn { background: #ffd700; color: #000; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; }
-        .terminal { background: #000; color: #00ff00; text-align: left; padding: 10px; font-size: 11px; height: 130px; overflow-y: auto; margin-top: 20px; border: 1px solid #333; font-family: monospace; }
+        body { background: #000; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .main-card { border: 3px solid #ffd700; background: #111; padding: 30px; border-radius: 20px; display: inline-block; width: 95%; max-width: 450px; box-shadow: 0 0 20px #ffd700; }
+        .input-box { margin: 15px 0; }
+        input { padding: 15px; width: 85%; border-radius: 8px; border: 1px solid #ffd700; background: #000; color: #fff; font-size: 18px; text-align: center; }
+        .btn-update { background: #ffd700; color: #000; border: none; padding: 15px; width: 92%; font-weight: bold; font-size: 18px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .btn-update:hover { background: #e6c200; }
+        #logs { background: #000; color: #00ff00; padding: 10px; margin-top: 20px; height: 120px; overflow-y: auto; text-align: left; font-size: 12px; border: 1px solid #333; font-family: monospace; }
     </style>
 </head>
 <body>
 
     <div class="main-card">
-        <h1>SAMRAT MASTER DASHBOARD</h1>
-        <div id="status" style="color: #00ff00; font-weight: bold;">[ SYSTEM READY ]</div>
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        
-        <p style="color: #888; margin: 0;">LIVE RESULT FOUND:</p>
-        <div id="win-number" class="result-circle">--</div>
-        <div id="market-name" style="font-size: 22px; color: #00e5ff; font-weight: bold;">WAITING...</div>
+        <h2 style="color: #ffd700; letter-spacing: 2px;">SAMRAT PANEL v19.0</h2>
+        <p style="color: #aaa; font-size: 13px;">Result daalein aur "Settle" button dabayein.</p>
+        <hr style="border: 0.5px solid #333;">
 
-        <!-- Manual Settle Section: Agar auto fail ho toh ye kaam karega -->
-        <div class="manual-section">
-            <p style="margin: 0 0 10px 0; color: #ffd700; font-size: 14px; font-weight: bold;">AGAR AUTO FAIL HO, TOH NO. DAALEIN:</p>
-            <input type="text" id="m-num" class="input-box" placeholder="NO.">
-            <input type="text" id="m-market" class="input-box" style="width: 120px;" placeholder="MARKET">
-            <button class="action-btn" onclick="manualUpdate()">HISAAB KARO & SETTLE</button>
+        <div class="input-box">
+            <input type="text" id="marketName" placeholder="Market (e.g. Gali)">
+        </div>
+        <div class="input-box">
+            <input type="text" id="winNumber" placeholder="Number (00-99)">
         </div>
 
-        <div id="logs" class="terminal">Initializing v17.0 Engine...</div>
+        <button class="btn-update" onclick="processSettle()">SETTLE ALL WALLETS NOW</button>
+
+        <div id="logs">System Ready...</div>
     </div>
 
     <script>
-        // --- 1. CONFIG ---
+        // Firebase Config (100% Correct)
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -50,84 +47,66 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function addLog(m) {
+        function addLog(msg) {
             const l = document.getElementById('logs');
-            l.innerHTML += "> " + m + "<br>";
+            l.innerHTML += "> " + msg + "<br>";
             l.scrollTop = l.scrollHeight;
         }
 
-        // --- 2. AUTOMATIC SCAN ---
-        async function autoScan() {
-            addLog("Auto-scanning live results...");
-            const target = "https://numbersamra-app-2.ai-studio";
-            
-            // Is baar naya proxy bypass
-            try {
-                const response = await fetch("https://corsproxy.io/?" + encodeURIComponent(target + "?t=" + Date.now()));
-                const data = await response.json();
-                if(data && data.number) {
-                    processHisaab(data.number, data.game);
-                }
-            } catch (err) {
-                addLog("Auto-fetch blocked by security. System in manual standby.");
-            }
-        }
+        async function processSettle() {
+            const market = document.getElementById('marketName').value.trim();
+            const winNo = document.getElementById('winNumber').value.trim();
 
-        // --- 3. MANUAL COMMAND ---
-        function manualUpdate() {
-            const num = document.getElementById('m-num').value;
-            const market = document.getElementById('m-market').value;
-            if(!num || !market) { alert("Bhai Number aur Market dono likho!"); return; }
-            
-            addLog("Manual command received for " + market + " result " + num);
-            processHisaab(num, market);
-        }
-
-        function processHisaab(winNo, market) {
-            document.getElementById('win-number').innerText = winNo;
-            document.getElementById('market-name').innerText = market.toUpperCase();
-            document.getElementById('status').innerText = "[ SETTLING PAYMENTS... ]";
-            settleWallets(winNo, market);
-        }
-
-        async function settleWallets(winNo, market) {
-            addLog("Database mein bets check ho rahi hain...");
-            const snapshot = await db.collection("bets").where("gameName", "==", market).where("status", "==", "pending").get();
-
-            if (snapshot.empty) {
-                addLog("Is market ki koi nai bet nahi mili.");
-                document.getElementById('status').innerText = "[ READY ]";
+            if(!market || !winNo) {
+                alert("Bhai Market aur Number dono bharna zaroori hai!");
                 return;
             }
 
-            const batch = db.batch();
-            snapshot.forEach(doc => {
-                const b = doc.data();
-                const uRef = db.collection("users").doc(b.userId);
-                const kRef = db.collection("khaiwal").doc("stats");
-                const amt = parseInt(b.amount);
+            addLog("Checking bets for " + market + "...");
 
-                if (b.number === winNo) {
-                    // Winner
-                    batch.update(uRef, { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
-                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
-                    batch.update(doc.ref, { status: "win" });
-                } else {
-                    // Loser
-                    batch.update(kRef, { totalBalance: firebase.firestore.FieldValue.increment(amt) });
-                    batch.update(doc.ref, { status: "loss" });
+            try {
+                // --- LINE 66: CORRECTED & STABLE VERSION ---
+                const betsRef = db.collection("bets");
+                const snapshot = await betsRef.where("gameName", "==", market).where("status", "==", "pending").get();
+
+                if (snapshot.empty) {
+                    addLog("Is market mein koi pending bet nahi mili.");
+                    alert("No pending bets found!");
+                    return;
                 }
-            });
 
-            await batch.commit();
-            addLog("SUCCESS: " + snapshot.size + " bets settled. ✅");
-            alert("Mubarak ho! Sabka wallet update ho gaya.");
-            document.getElementById('status').innerText = "[ READY ]";
+                addLog(snapshot.size + " bets mili hain. Hisaab ho raha hai...");
+                const batch = db.batch();
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const userRef = db.collection("users").doc(data.userId);
+                    const khaiwalRef = db.collection("khaiwal").doc("stats");
+                    const amount = parseInt(data.amount);
+
+                    if (data.number === winNo) {
+                        // Winner Logic (90x)
+                        batch.update(userRef, { "wallet": firebase.firestore.FieldValue.increment(amount * 90) });
+                        batch.update(khaiwalRef, { "totalBalance": firebase.firestore.FieldValue.increment(-(amount * 90)) });
+                        batch.update(doc.ref, { "status": "win" });
+                    } else {
+                        // Loser Logic
+                        batch.update(khaiwalRef, { "totalBalance": firebase.firestore.FieldValue.increment(amount) });
+                        batch.update(doc.ref, { "status": "loss" });
+                    }
+                });
+
+                await batch.commit();
+                addLog("SUCCESS! Sabka wallet update ho gaya. ✅");
+                alert("Mubarak ho! Saara hisaab automatic ho gaya.");
+                document.getElementById('winNumber').value = "";
+
+            } catch (error) {
+                addLog("Error: " + error.message);
+                console.error(error);
+                alert("Kuch galat hua. Check Console.");
+            }
         }
-
-        setInterval(autoScan, 60000); // 1 min auto
-        autoScan();
-
     </script>
 </body>
 </html>
