@@ -1,68 +1,135 @@
-<script>
-    // --- SAFE AUTO-WINNER LOGIC ---
-    let isProcessing = false;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Samrat - Auto Wallet Engine</title>
+    
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-    async function fetchLiveNumber() {
-        if (isProcessing) return; // Agar pehle se winner check ho raha hai to ruko
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; text-align: center; padding: 40px; }
+        .card { background: #1e1e1e; border: 2px solid #333; padding: 30px; border-radius: 15px; display: inline-block; min-width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status { font-size: 1.2rem; color: #ff9800; margin-bottom: 20px; }
+        .result { font-size: 2.5rem; color: #4caf50; font-weight: bold; margin: 20px 0; }
+        .log { font-size: 0.9rem; color: #888; margin-top: 20px; text-align: left; background: #000; padding: 10px; border-radius: 5px; height: 100px; overflow-y: auto; }
+    </style>
+</head>
+<body>
 
-        const targetUrl = "https://numbersamra-app-2.ai.studio";
-        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
+    <div class="card">
+        <h1>Number Samrat Engine</h1>
+        <div id="status" class="status">System Starting...</div>
+        <hr style="border: 1px solid #333">
+        <p>Latest Live Result:</p>
+        <div id="live-result" class="result">--</div>
+        <div id="game-name" style="color: #aaa;">Waiting for result...</div>
+        
+        <div id="logs" class="log">Initializing Firebase...</div>
+    </div>
 
-        try {
-            const response = await fetch(proxyUrl);
-            const data = await response.json();
-            const match = data.contents.match(/\b\d{2}\b/); 
-            
-            if (match) {
-                const newNumber = match[0];
+    <script>
+        // --- APKI REAL CONFIG (Maine Photo se nikaal li hai) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
+            authDomain: "number-samrat.firebaseapp.com",
+            databaseURL: "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "number-samrat",
+            storageBucket: "number-samrat.firebasestorage.app",
+            messagingSenderId: "154722781783",
+            appId: "1:154722781783:web:7b6136cec1c34a11b3f112"
+        };
+
+        // Firebase Start
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        addLog("Firebase Connected Successfully!");
+
+        let isWorking = false;
+
+        // --- RESULT CHECK KARNE KA FUNCTION ---
+        async function checkLiveResult() {
+            if (isWorking) return;
+            addLog("Checking for new results...");
+            document.getElementById('status').innerText = "Status: Scanning Results...";
+
+            try {
+                // Aapki Result API
+                const res = await fetch("https://numbersamrat-app-2.ai-st.workers.dev/get-result");
+                const data = await res.json();
                 
-                // Check karo ki kya ye number Firebase mein pehle se hai?
-                db.ref('live_result/current_number').once('value', (snap) => {
-                    const oldNumber = snap.val();
+                if (data && data.number) {
+                    document.getElementById('live-result').innerText = data.number;
+                    document.getElementById('game-name').innerText = "Game: " + data.game;
                     
-                    if (newNumber !== oldNumber) {
-                        isProcessing = true;
-                        console.log("Naya Result Aaya: " + newNumber);
-                        
-                        // 1. Database mein naya number update karo
-                        db.ref('live_result/current_number').set(newNumber);
-                        
-                        // 2. Winners ko dhoondo aur sirf unhe paise do
-                        processWinners(newNumber);
-                    }
-                });
+                    // Wallet Update Shuru Karo
+                    await startWalletSettlement(data.number, data.game);
+                }
+            } catch (err) {
+                addLog("Error fetching result: " + err.message);
             }
-        } catch (err) { console.log("System Checking..."); }
-    }
+        }
 
-    function processWinners(winningNum) {
-        db.ref('bids').once('value', (snapshot) => {
-            if (!snapshot.exists()) {
-                isProcessing = false;
+        // --- WALLET AUR WINNER UPDATE LOGIC ---
+        async function startWalletSettlement(winNo, game) {
+            isWorking = true;
+            addLog("Processing Wallets for Result: " + winNo);
+            document.getElementById('status').innerText = "Status: Updating Wallets...";
+
+            const betsRef = db.collection("bets");
+            const snapshot = await betsRef.where("gameName", "==", game).where("status", "==", "pending").get();
+
+            if (snapshot.empty) {
+                addLog("No pending bets found for this game.");
+                isWorking = false;
                 return;
             }
 
-            snapshot.forEach((userSnap) => {
-                const userName = userSnap.key;
-                const userBids = userSnap.val();
+            const batch = db.batch();
+            let winnersCount = 0;
+            let losersCount = 0;
 
-                Object.keys(userBids).forEach((bidId) => {
-                    const bid = userBids[bidId];
-                    if (bid.number === winningNum) {
-                        const winAmt = parseFloat(bid.amount) * 90;
-                        // Winner ke wallet mein paise add karna
-                        db.ref('users/' + userName + '/wallet_balance').transaction((bal) => (bal || 0) + winAmt);
-                    }
-                });
+            snapshot.forEach((doc) => {
+                const bet = doc.data();
+                const userRef = db.collection("users").doc(bet.userId);
+                const khaiwalRef = db.collection("khaiwal").doc("stats");
+                const amount = parseInt(bet.amount);
+
+                if (bet.number === winNo) {
+                    // WINNER: 90 Guna Paisa
+                    const winAmount = amount * 90;
+                    batch.update(userRef, { wallet: firebase.firestore.FieldValue.increment(winAmount) });
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(-winAmount) });
+                    batch.update(doc.ref, { status: "win" });
+                    winnersCount++;
+                } else {
+                    // LOSER: Paisa Khaiwal ko
+                    batch.update(khaiwalRef, { totalBalance: firebase.firestore.FieldValue.increment(amount) });
+                    batch.update(doc.ref, { status: "loss" });
+                    losersCount++;
+                }
             });
 
-            // Sabse Important: Bids delete karna taaki dubara payout na ho
-            db.ref('bids').remove().then(() => {
-                isProcessing = false;
-                alert("Result Out: " + winningNum + ". Winners Paid!");
-            });
-        });
-    }
+            await batch.commit();
+            addLog(Success! Winners: ${winnersCount}, Losers: ${losersCount});
+            document.getElementById('status').innerText = "Status: Update Complete ✅";
+            
+            // 1 minute ka break taaki bar bar na chale
+            setTimeout(() => { isWorking = false; }, 60000);
+        }
 
-    setInterval(fetchLiveNumber, 40000); // Har 40 second mein check karo
-</script>
+        function addLog(msg) {
+            const logDiv = document.getElementById('logs');
+            logDiv.innerHTML += > ${msg}<br>;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Har 30 second mein automatic check karega
+        setInterval(checkLiveResult, 30000);
+        checkLiveResult();
+
+    </script>
+</body>
+</html>
