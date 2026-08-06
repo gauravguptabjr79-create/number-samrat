@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 1. GOOGLE VERIFICATION -->
+    <!-- 1. GOOGLE VERIFICATION (Verified) -->
     <meta name="google-site-verification" content="cixluxiwz_cpTypsQw5OGqOPEtbM0WVS3IeW-W78C9E" />
 
-    <title>Number Samrat | Gali Desawar Live Result | Satta King Chart</title>
+    <title>Number Samrat | Gali Desawar Live Result | Satta King Chart 2024</title>
     <meta name="description" content="Number Samrat par payein sabse tez Gali, Desawar, Faridabad aur Ghaziabad ke live result aur monthly charts. India ka no. 1 auto-settle system.">
-    <meta name="keywords" content="number samrat, numbersamrat.online, gali result, desawar result, satta king chart">
-
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; text-align: center; }
-        .hero { padding: 50px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 2px solid #fbbf24; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; text-align: center; }
+        .hero { padding: 50px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 3px solid #fbbf24; }
         h1 { color: #fbbf24; font-size: 2.8rem; margin: 0; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
         .tagline { color: #94a3b8; margin-bottom: 30px; font-size: 1.1rem; }
         
@@ -29,12 +28,13 @@
         .result-container { padding: 20px; max-width: 600px; margin: 0 auto; }
         .res-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .res-table th, .res-table td { border: 1px solid #334155; padding: 18px; font-size: 1.2rem; }
-        .res-table th { background: #334155; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px; }
+        .res-table th { background: #334155; color: #fbbf24; text-transform: uppercase; }
         .market-name { font-weight: bold; color: #cbd5e1; text-align: left; }
-        .market-num { color: #22c55e; font-weight: 800; font-size: 1.8rem; }
+        .market-num { color: #22c55e; font-weight: 800; font-size: 1.8rem; transition: 0.5s; }
         
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        /* Number Blink Effect */
+        .blink { animation: blinker 1.5s linear infinite; color: #fbbf24 !important; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
 
         .seo-text { padding: 30px; text-align: left; max-width: 600px; margin: 0 auto; color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
         footer { padding: 20px; color: #475569; font-size: 0.8rem; }
@@ -44,10 +44,9 @@
 
     <div class="hero">
         <h1>Number Samrat 👑</h1>
-        <p class="tagline">India ka Sabse Tez Live Result aur Auto-Settle System</p>
+        <p class="tagline">India's Fastest Live Result & Auto-Settle System</p>
         
         <div class="btn-group">
-            <!-- Asli Links -->
             <a href="login.html" class="btn btn-login">Login Account</a>
             <a href="signup.html" class="btn btn-reg">Register New Account</a>
             <a href="numbersamrat.apk" class="btn btn-apk">⬇️ Download Official APK</a>
@@ -59,59 +58,81 @@
         <table class="res-table">
             <thead>
                 <tr>
-                    <th>Market</th>
+                    <th>Market Name</th>
                     <th>Result</th>
                 </tr>
             </thead>
-            <tbody id="result-body">
+            <tbody>
                 <tr><td class="market-name">DESAWAR</td><td id="res-desawar" class="market-num">--</td></tr>
                 <tr><td class="market-name">FARIDABAD</td><td id="res-faridabad" class="market-num">--</td></tr>
                 <tr><td class="market-name">GHAZIABAD</td><td id="res-ghaziabad" class="market-num">--</td></tr>
                 <tr><td class="market-name">GALI</td><td id="res-gali" class="market-num">--</td></tr>
             </tbody>
         </table>
-        <p style="font-size: 12px; color: #64748b; margin-top: 10px;">Results update automatically every 1 minute.</p>
+        <p id="update-status" style="font-size: 12px; color: #64748b; margin-top: 10px;">Searching for live updates...</p>
     </div>
 
     <div class="seo-text">
         <h3>About Number Samrat Online</h3>
-        <p>Hamari website numbersamrat.online par aapko milenge sabse fast result. Hum Gali, Desawar, Faridabad aur Ghaziabad ke live updates dete hain. Hamara system poori tarah automatic settlement par kaam karta hai, jisse aapko subah jaldi uthne ki zaroorat nahi padti. Registration bilkul free hai!</p>
+        <p>Hamari website numbersamrat.online par aapko milenge sabse fast Gali result aur Desawar chart. Hum Faridabad aur Ghaziabad ke live numbers bhi provide karte hain. Hamara system automatic settlement par chalta hai, jo users ke liye sabse behtar hai.</p>
     </div>
 
     <footer>
         © 2024 Number Samrat Management. All Rights Reserved.
     </footer>
 
-    <!-- AUTO RESULT UPDATE SCRIPT -->
+    <!-- LIVE RESULT UPDATER SCRIPT -->
     <script>
         async function fetchLiveResults() {
-            const API_URL = "https://numbersamra-app-2.ai.studio/get-result";
-            const PROXY = "https://api.allorigins.win/get?url=" + encodeURIComponent(API_URL + "?t=" + Date.now());
+            const TARGET_URL = "https://numbersamra-app-2.ai.studio/get-result";
+            
+            // Bypass logic taaki result block na ho
+            const proxy1 = "https://api.allorigins.win/get?url=" + encodeURIComponent(TARGET_URL + "?t=" + Date.now());
+            const proxy2 = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(TARGET_URL);
 
             try {
-                const response = await fetch(PROXY);
-                const raw = await response.json();
-                const data = JSON.parse(raw.contents);
+                let response = await fetch(proxy1);
+                let json = await response.json();
+                let data = JSON.parse(json.contents);
+
+                // Agar pehla proxy fail ho toh dusra try karo
+                if(!data || !data.number) {
+                    console.log("Trying secondary route...");
+                    response = await fetch(proxy2);
+                    data = await response.json();
+                }
 
                 if(data && data.number) {
-                    const game = data.game.toLowerCase();
+                    const game = data.game.toUpperCase();
                     const num = data.number;
 
-                    // Table update logic
-                    if (game.includes("desawar")) document.getElementById("res-desawar").innerText = num;
-                    if (game.includes("faridabad")) document.getElementById("res-faridabad").innerText = num;
-                    if (game.includes("ghaziabad")) document.getElementById("res-ghaziabad").innerText = num;
-                    if (game.includes("gali")) document.getElementById("res-gali").innerText = num;
-                    
-                    console.log("Result Updated: " + game + " = " + num);
+                    document.getElementById('update-status').innerText = "Last checked: Just now";
+
+                    // Result ko table mein fit karna
+                    if (game.includes("DESAWAR")) {
+                        const el = document.getElementById("res-desawar");
+                        el.innerText = num; el.classList.add("blink");
+                    }
+                    if (game.includes("FARIDABAD")) {
+                        const el = document.getElementById("res-faridabad");
+                        el.innerText = num; el.classList.add("blink");
+                    }
+                    if (game.includes("GHAZIABAD")) {
+                        const el = document.getElementById("res-ghaziabad");
+                        el.innerText = num; el.classList.add("blink");
+                    }
+                    if (game.includes("GALI")) {
+                        const el = document.getElementById("res-gali");
+                        el.innerText = num; el.classList.add("blink");
+                    }
                 }
             } catch (err) {
-                console.log("Result fetch error, retrying...");
+                document.getElementById('update-status').innerText = "System scanning live markets...";
             }
         }
 
-        // Har 60 seconds mein update karega
-        setInterval(fetchLiveResults, 60000);
+        // Har 30 second mein check karega
+        setInterval(fetchLiveResults, 30000);
         fetchLiveResults();
     </script>
 
