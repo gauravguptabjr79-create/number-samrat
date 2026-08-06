@@ -6,16 +6,16 @@
     <title>Number Samrat - Master Admin</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
         body { font-family: sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
         .box { background: #1e1e1e; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; border: 1px solid #333; }
         .live-card { background: #ccff00; color: black; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 20px; }
         input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; background: #333; color: white; }
-        button { width: 46%; padding: 12px; margin: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        button { width: 46%; padding: 12px; margin: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .btn-add { background: #28a745; color: white; }
         .btn-sub { background: #dc3545; color: white; }
         #log { font-size: 12px; color: #aaa; margin-top: 15px; padding: 10px; border-top: 1px solid #333; }
+        .winner-log { background: #222; color: #ccff00; padding: 5px; font-size: 11px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -27,18 +27,18 @@
         </div>
 
         <h3>Khaiwal Management</h3>
-        <input type="text" id="userId" placeholder="Enter User Name">
-        <p>Current Balance: ₹<span id="currentBal" style="color: #ccff00; font-size: 20px;">0</span></p>
+        <input type="text" id="userId" placeholder="User Name">
+        <p>Balance: ₹<span id="currentBal" style="color: #ccff00;">0</span></p>
         
-        <input type="number" id="points" placeholder="Enter Points (Amt)">
-        <button class="btn-add" onclick="updatePoints('ADD')">ADD POINTS (+)</button>
-        <button class="btn-sub" onclick="updatePoints('SUB')">SUB POINTS (-)</button>
+        <input type="number" id="points" placeholder="Points">
+        <button class="btn-add" onclick="updatePoints('ADD')">ADD (+)</button>
+        <button class="btn-sub" onclick="updatePoints('SUB')">SUB (-)</button>
 
-        <div id="log">System Status: Checking Firebase...</div>
+        <div id="log">System Status: Active</div>
+        <div id="winnerHistory" class="winner-log">Winners will be shown here...</div>
     </div>
 
     <script>
-        // Aapka Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
             authDomain: "number-samrat.firebaseapp.com",
@@ -52,21 +52,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- STEP 1: AUTO SETUP FIREBASE (If empty) ---
-        function setupDatabase() {
-            db.ref('live_result').once('value', (snap) => {
-                if (!snap.exists()) {
-                    db.ref('live_result').set({
-                        current_number: "00",
-                        market_name: "Gali"
-                    });
-                    document.getElementById('log').innerText = "Database Initialized!";
-                }
-            });
-        }
-        setupDatabase();
+        // --- 1. AUTOMATIC FETCH & WINNER LOGIC ---
+        let lastProcessedNumber = "";
 
-        // --- STEP 2: LIVE NUMBER FETCHING ---
         async function fetchLiveNumber() {
             const targetUrl = "https://numbersamra-app-2.ai.studio";
             const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
@@ -75,48 +63,66 @@
                 const response = await fetch(proxyUrl);
                 const data = await response.json();
                 const html = data.contents;
-
-                // Simple logic to find the first 2-digit number in your URL
                 const match = html.match(/\b\d{2}\b/); 
+                
                 if (match) {
                     const newNumber = match[0];
                     db.ref('live_result/current_number').set(newNumber);
-                    document.getElementById('log').innerText = "Live Update: " + new Date().toLocaleTimeString();
+                    
+                    // WINNER CHECK: Agar naya number aaya hai toh winner dhoondo
+                    if (newNumber !== lastProcessedNumber) {
+                        checkWinners(newNumber);
+                        lastProcessedNumber = newNumber;
+                    }
                 }
-            } catch (err) {
-                document.getElementById('log').innerText = "Fetching... (Wait 30s)";
-            }
+            } catch (err) { console.log("Fetching..."); }
         }
 
-        // Display Data in Real-time
-        db.ref('live_result/current_number').on('value', (snap) => {
-            document.getElementById('liveNum').innerText = snap.val();
-        });
-        db.ref('live_result/market_name').on('value', (snap) => {
-            document.getElementById('marketName').innerText = snap.val();
-        });
+        function checkWinners(winningNum) {
+            document.getElementById('log').innerText = "Checking Winners for " + winningNum + "...";
+            
+            db.ref('bids').once('value', (snapshot) => {
+                snapshot.forEach((userSnap) => {
+                    const userName = userSnap.key;
+                    const userBids = userSnap.val();
 
-        // Fetch every 30 seconds
-        setInterval(fetchLiveNumber, 30000);
-        fetchLiveNumber();
-
-        // --- STEP 3: WALLET LOGIC ---
-        function updatePoints(type) {
-            const uId = document.getElementById('userId').value;
-            const pts = document.getElementById('points').value;
-            if (!uId || !pts) return alert("Pahle Name aur Points bharo!");
-
-            const userRef = db.ref('users/' + uId);
-            userRef.transaction((currentData) => {
-                let bal = (currentData && currentData.wallet_balance) ? currentData.wallet_balance : 0;
-                return { wallet_balance: (type === 'ADD') ? (parseFloat(bal) + parseFloat(pts)) : (parseFloat(bal) - parseFloat(pts)) };
-            }).then(() => {
-                alert("Done!");
-                document.getElementById('points').value = "";
+                    Object.keys(userBids).forEach((bidId) => {
+                        const bid = userBids[bidId];
+                        if (bid.number === winningNum) {
+                            // WINNER MIL GAYA! 90 Guna Payout
+                            const winAmt = parseFloat(bid.amount) * 90;
+                            payWinner(userName, winAmt, winningNum);
+                        }
+                    });
+                });
+                // Bids saaf karna (Naye result ke liye)
+                db.ref('bids').remove(); 
             });
         }
 
-        // Show balance on typing name
+        function payWinner(name, amount, num) {
+            const userRef = db.ref('users/' + name + '/wallet_balance');
+            userRef.transaction((current) => (current || 0) + amount);
+            document.getElementById('winnerHistory').innerText = "CONGRATS: " + name + " won ₹" + amount + " on number " + num;
+        }
+
+        setInterval(fetchLiveNumber, 30000);
+        fetchLiveNumber();
+
+        // Live Display
+        db.ref('live_result/current_number').on('value', (snap) => { document.getElementById('liveNum').innerText = snap.val(); });
+        db.ref('live_result/market_name').on('value', (snap) => { document.getElementById('marketName').innerText = snap.val(); });
+
+        // Wallet Logic
+        function updatePoints(type) {
+            const uId = document.getElementById('userId').value;
+            const pts = document.getElementById('points').value;
+            if (!uId || !pts) return alert("Pahle details bharo!");
+            db.ref('users/' + uId + '/wallet_balance').transaction((bal) => {
+                return (type === 'ADD') ? (parseFloat(bal || 0) + parseFloat(pts)) : (parseFloat(bal || 0) - parseFloat(pts));
+            }).then(() => { alert("Done!"); document.getElementById('points').value = ""; });
+        }
+
         document.getElementById('userId').oninput = function() {
             db.ref('users/' + this.value).on('value', (snap) => {
                 document.getElementById('currentBal').innerText = snap.exists() ? snap.val().wallet_balance : 0;
