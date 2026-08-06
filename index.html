@@ -1,171 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Samrat - Master Admin</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; text-align: center; }
-        .box { background: #1e1e1e; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; border: 1px solid #333; }
-        .live-card { background: #ccff00; color: black; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 20px; }
-        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; font-size: 16px; background: #333; color: white; }
-        button { width: 46%; padding: 12px; margin: 5px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .btn-add { background: #28a745; color: white; }
-        .btn-sub { background: #dc3545; color: white; }
-        #log { font-size: 12px; color: #aaa; margin-top: 15px; padding: 10px; border-top: 1px solid #333; }
-        .winner-log { background: #222; color: #ccff00; padding: 5px; font-size: 11px; margin-top: 5px; }
-    </style>
-</head>
-<body>
+<script>
+    // --- SAFE AUTO-WINNER LOGIC ---
+    let isProcessing = false;
 
-    <div class="box">
-        <div class="live-card">
-            <span id="marketName">Loading Market...</span> <br>
-            <span style="font-size: 40px;" id="liveNum">--</span>
-        </div>
+    async function fetchLiveNumber() {
+        if (isProcessing) return; // Agar pehle se winner check ho raha hai to ruko
 
-        <h3>Khaiwal Management</h3>
-        <input type="text" id="userId" placeholder="User Name">
-        <p>Balance: ₹<span id="currentBal" style="color: #ccff00;">0</span></p>
-        
-        <input type="number" id="points" placeholder="Points">
-        <button class="btn-add" onclick="updatePoints('ADD')">ADD (+)</button>
-        <button class="btn-sub" onclick="updatePoints('SUB')">SUB (-)</button>
+        const targetUrl = "https://numbersamra-app-2.ai.studio";
+        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
 
-        <div id="log">System Status: Active</div>
-        <div id="winnerHistory" class="winner-log">Winners will be shown here...</div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
-            authDomain: "number-samrat.firebaseapp.com",
-            databaseURL: "https://number-samrat-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "number-samrat",
-            storageBucket: "number-samrat.firebasestorage.app",
-            messagingSenderId: "154722781783",
-            appId: "1:154722781783:web:7bb136ce1c34a11b3f112"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // --- 1. AUTOMATIC FETCH & WINNER LOGIC ---
-        let lastProcessedNumber = "";
-
-        async function fetchLiveNumber() {
-            const targetUrl = "https://numbersamra-app-2.ai.studio";
-            const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl);
-
-            try {
-                const response = await fetch(proxyUrl);
-                const data = await response.json();
-                const html = data.contents;
-                const match = html.match(/\b\d{2}\b/); 
-                
-                if (match) {
-                    const newNumber = match[0];
-                    db.ref('live_result/current_number').set(newNumber);
-                    
-                    // WINNER CHECK: Agar naya number aaya hai toh winner dhoondo
-                    if (newNumber !== lastProcessedNumber) {
-                        checkWinners(newNumber);
-                        lastProcessedNumber = newNumber;
-                    }
-                }
-            } catch (err) { console.log("Fetching..."); }
-        }
-
-        function checkWinners(winningNum) {
-            document.getElementById('log').innerText = "Checking Winners for " + winningNum + "...";
+        try {
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            const match = data.contents.match(/\b\d{2}\b/); 
             
-            db.ref('bids').once('value', (snapshot) => {
-                snapshot.forEach((userSnap) => {
-                    const userName = userSnap.key;
-                    const userBids = userSnap.val();
-
-                    Object.keys(userBids).forEach((bidId) => {
-                        const bid = userBids[bidId];
-                        if (bid.number === winningNum) {
-                            // WINNER MIL GAYA! 90 Guna Payout
-                            const winAmt = parseFloat(bid.amount) * 90;
-                            payWinner(userName, winAmt, winningNum);
-                        }
-                    });
+            if (match) {
+                const newNumber = match[0];
+                
+                // Check karo ki kya ye number Firebase mein pehle se hai?
+                db.ref('live_result/current_number').once('value', (snap) => {
+                    const oldNumber = snap.val();
+                    
+                    if (newNumber !== oldNumber) {
+                        isProcessing = true;
+                        console.log("Naya Result Aaya: " + newNumber);
+                        
+                        // 1. Database mein naya number update karo
+                        db.ref('live_result/current_number').set(newNumber);
+                        
+                        // 2. Winners ko dhoondo aur sirf unhe paise do
+                        processWinners(newNumber);
+                    }
                 });
-                // Bids saaf karna (Naye result ke liye)
-                db.ref('bids').remove(); 
+            }
+        } catch (err) { console.log("System Checking..."); }
+    }
+
+    function processWinners(winningNum) {
+        db.ref('bids').once('value', (snapshot) => {
+            if (!snapshot.exists()) {
+                isProcessing = false;
+                return;
+            }
+
+            snapshot.forEach((userSnap) => {
+                const userName = userSnap.key;
+                const userBids = userSnap.val();
+
+                Object.keys(userBids).forEach((bidId) => {
+                    const bid = userBids[bidId];
+                    if (bid.number === winningNum) {
+                        const winAmt = parseFloat(bid.amount) * 90;
+                        // Winner ke wallet mein paise add karna
+                        db.ref('users/' + userName + '/wallet_balance').transaction((bal) => (bal || 0) + winAmt);
+                    }
+                });
             });
-        }
 
-        function payWinner(name, amount, num) {
-            const userRef = db.ref('users/' + name + '/wallet_balance');
-            userRef.transaction((current) => (current || 0) + amount);
-            document.getElementById('winnerHistory').innerText = "CONGRATS: " + name + " won ₹" + amount + " on number " + num;
-        }
-
-        setInterval(fetchLiveNumber, 30000);
-        fetchLiveNumber();
-
-        // Live Display
-        db.ref('live_result/current_number').on('value', (snap) => { document.getElementById('liveNum').innerText = snap.val(); });
-        db.ref('live_result/market_name').on('value', (snap) => { document.getElementById('marketName').innerText = snap.val(); });
-
-        // Wallet Logic
-        function updatePoints(type) {
-            const uId = document.getElementById('userId').value;
-            const pts = document.getElementById('points').value;
-            if (!uId || !pts) return alert("Pahle details bharo!");
-            db.ref('users/' + uId + '/wallet_balance').transaction((bal) => {
-                return (type === 'ADD') ? (parseFloat(bal || 0) + parseFloat(pts)) : (parseFloat(bal || 0) - parseFloat(pts));
-            }).then(() => { alert("Done!"); document.getElementById('points').value = ""; });
-        }
-
-        document.getElementById('userId').oninput = function() {
-            db.ref('users/' + this.value).on('value', (snap) => {
-                document.getElementById('currentBal').innerText = snap.exists() ? snap.val().wallet_balance : 0;
+            // Sabse Important: Bids delete karna taaki dubara payout na ho
+            db.ref('bids').remove().then(() => {
+                isProcessing = false;
+                alert("Result Out: " + winningNum + ". Winners Paid!");
             });
-        };
-    </script>
-</body>
-</html>
-// --- BOLI LAGANE KA SAHI LOGIC (TRANSACTION SE) ---
-function placeBid() {
-    const name = document.getElementById('userName').value;
-    const num = document.getElementById('bidNumber').value;
-    const pts = document.getElementById('bidPoints').value;
+        });
+    }
 
-    if(!name || !num || !pts) return alert("Pahle saari details bharo!");
-    const bidAmount = parseFloat(pts);
-
-    if (bidAmount <= 0) return alert("Sahi amount daalo!");
-
-    const userRef = db.ref('users/' + name + '/wallet_balance');
-
-    // Transaction se balance check aur deduct karna (Safe Tarika)
-    userRef.transaction((currentBal) => {
-        if (currentBal === null) return 0; // Agar user nahi hai
-        if (currentBal < bidAmount) {
-            return; // Balance kam hai to transaction cancel
-        }
-        return currentBal - bidAmount;
-    }, (error, committed, snapshot) => {
-        if (error) {
-            alert("Error: Connection slow hai.");
-        } else if (!committed) {
-            alert("Balance kam hai! Khaiwal se recharge karwayein.");
-        } else {
-            // Agar balance kat gaya, toh Boli (Bid) save karo
-            db.ref('bids/' + name).push({
-                number: num,
-                amount: bidAmount,
-                time: new Date().toLocaleTimeString()
-            });
-            alert("Boli Lag Gayi! Balance Kat Gaya.");
-            document.getElementById('bidNumber').value = "";
-            document.getElementById('bidPoints').value = "";
-        }
-    });
-}
+    setInterval(fetchLiveNumber, 40000); // Har 40 second mein check karo
+</script>
