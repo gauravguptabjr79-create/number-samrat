@@ -4,95 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="cixluxiwz_cpTypsQw5OGqOPEtbM0WVS3IeW-W78C9E" />
-    <title>Number Samrat | Live Result | India's #1 System</title>
+    <title>Number Samrat - Download Official App</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; text-align: center; }
-        .hero { padding: 50px 20px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 2px solid #fbbf24; }
-        h1 { color: #fbbf24; font-size: 2.8rem; margin: 0; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
-        .btn-group { display: flex; flex-direction: column; gap: 15px; align-items: center; margin: 30px 0; }
-        .btn { width: 85%; max-width: 300px; padding: 16px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.1rem; display: block; color: white; transition: 0.3s; }
-        .btn-login { background: #3b82f6; }
-        .btn-reg { background: #10b981; }
-        .btn-apk { background: #fbbf24; color: black; }
+        .container { padding: 60px 20px; max-width: 500px; margin: 0 auto; }
+        h1 { color: #fbbf24; font-size: 2.5rem; margin-bottom: 10px; }
+        .tagline { color: #94a3b8; margin-bottom: 40px; }
         
-        .result-box { padding: 20px; max-width: 500px; margin: 0 auto; }
-        .res-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .res-table th, .res-table td { border: 1px solid #334155; padding: 15px; }
-        .res-table th { background: #334155; color: #fbbf24; }
-        .market-num { color: #22c55e; font-weight: 800; font-size: 1.8rem; }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .btn { width: 90%; padding: 18px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 1.2rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         
-        .blink { animation: blinker 1s linear infinite; color: #fbbf24; }
-        @keyframes blinker { 50% { opacity: 0.3; } }
-        #status-log { font-size: 10px; color: #475569; margin-top: 15px; }
+        .btn-download { background: #fbbf24; color: #000; font-size: 1.4rem; animation: pulse 2s infinite; }
+        .btn-login { background: #3b82f6; color: white; }
+        .btn-reg { background: #10b981; color: white; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .info-box { background: #1e293b; padding: 20px; border-radius: 15px; margin-top: 40px; border: 1px solid #334155; text-align: left; }
+        h3 { color: #fbbf24; margin-top: 0; }
+        p { font-size: 0.9rem; color: #94a3b8; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-    <div class="hero">
+    <div class="container">
         <h1>Number Samrat 👑</h1>
-        <p style="color:#94a3b8;">Fastest Auto-Settle System in India</p>
+        <p class="tagline">India ka sabse bharosemand auto-settle system.</p>
+
         <div class="btn-group">
-            <a href="login.html" class="btn btn-login">Login</a>
-            <a href="signup.html" class="btn btn-reg">Register</a>
-            <a href="numbersamrat.apk" class="btn btn-apk">⬇️ Download APK</a>
-        </div>
-    </div>
-
-    <div class="result-box">
-        <h2 style="color: #fbbf24;">Today's Live Results</h2>
-        <table class="res-table">
-            <thead><tr><th>Market</th><th>Result</th></tr></thead>
-            <tbody>
-                <tr><td>DESAWAR</td><td id="res-DESAWAR" class="market-num">--</td></tr>
-                <tr><td>FARIDABAD</td><td id="res-FARIDABAD" class="market-num">--</td></tr>
-                <tr><td>GHAZIABAD</td><td id="res-GHAZIABAD" class="market-num">--</td></tr>
-                <tr><td>GALI</td><td id="res-GALI" class="market-num">--</td></tr>
-            </tbody>
-        </table>
-        <div id="status-log">Scanning live numbers...</div>
-    </div>
-
-    <script>
-        async function fetchLiveResults() {
-            // Bhai, URL ekdam sahi kar diya hai
-            const TARGET_URL = "https://numbersamra-app-2.ai.studio";
+            <!-- Asli Maqsad: APK Download -->
+            <a href="numbersamrat.apk" class="btn btn-download">⬇️ DOWNLOAD OFFICIAL APK</a>
             
-            // 2 alag proxies taaki failure ka chance na rahe
-            const routes = [
-                "https://api.allorigins.win/get?url=" + encodeURIComponent(TARGET_URL + "?t=" + Date.now()),
-                "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(TARGET_URL)
-            ];
+            <p style="margin: 10px 0; color: #475569;">OR</p>
 
-            for (let r of routes) {
-                try {
-                    const response = await fetch(r);
-                    const raw = await response.json();
-                    
-                    // Proxy se data nikalne ka logic
-                    const data = (raw.contents) ? JSON.parse(raw.contents) : raw;
+            <!-- Dashboards Access -->
+            <a href="login.html" class="btn btn-login">Login Account</a>
+            <a href="signup.html" class="btn btn-reg">Create New Account</a>
+        </div>
 
-                    if(data && data.number) {
-                        const market = data.game.toUpperCase();
-                        const num = data.number;
+        <div class="info-box">
+            <h3>Kyu Download karein?</h3>
+            <p>• Sabse Tez Result Update.<br>
+               • Automatic Winning Settlement.<br>
+               • 24x7 Customer Support.<br>
+               • 100% Safe aur Secure Payment Gateway.</p>
+        </div>
 
-                        // Table mein number chipkana
-                        const cell = document.getElementById("res-" + market);
-                        if (cell) {
-                            cell.innerText = num;
-                            cell.classList.add("blink");
-                            document.getElementById('status-log').innerText = "Live: " + market + " updated.";
-                            return; // Ek route chal gaya toh break
-                        }
-                    }
-                } catch (err) {
-                    console.log("Rasta block hai, dusra try kar rahe hain...");
-                }
-            }
-        }
+        <footer style="margin-top: 50px; color: #475569; font-size: 12px;">
+            © 2024 Number Samrat. Developed for entertainment purpose only.
+        </footer>
+    </div>
 
-        // Har 30 second mein automatic update
-        setInterval(fetchLiveResults, 30000);
-        fetchLiveResults();
-    </script>
 </body>
 </html>
