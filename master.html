@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MASTER ADMIN - Number Samrat</title>
+    <script>
+    // --- SABSE UPAR YE JODO (MASTER PASSWORD) ---
+    const masterPass = prompt("Enter Master Admin Password:");
+    if (masterPass !== "gaurav786") { // "gaurav786" aapka password hai
+        alert("Wrong Password! Access Denied.");
+        window.location.href = "index.html";
+    }
+
+    // --- Iske niche aapka baaki purana code waisa hi rahega ---
+    const firebaseConfig = { 
+        apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", 
+        // ... baki config
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    // ... baki sara code
+</script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
