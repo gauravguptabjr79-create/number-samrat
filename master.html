@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER ADMIN - Number Samrat</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #000; color: white; padding: 20px; }
+        .header { border-bottom: 2px solid #ef4444; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #ef4444; }
+        
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #222; padding: 12px; text-align: left; }
+        th { background: #ef4444; color: white; }
+        
+        .status-pending { color: #facc15; font-weight: bold; }
+        .status-active { color: #22c55e; font-weight: bold; }
+        
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-approve { background: #22c55e; color: white; }
+        .btn-block { background: #ef4444; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>MASTER CONTROL 👑</h1>
+        <p>Control All India Khaiwals & Data</p>
+    </div>
+
+    <!-- Master Stats -->
+    <div class="stat-card">
+        <h3>Total India Collection (All Agents)</h3>
+        <h1 id="grandTotal" style="color:#ef4444;">₹0</h1>
+    </div>
+
+    <h3>Agent Requests & Management</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Agent Name</th>
+                <th>Phone (ID)</th>
+                <th>Status</th>
+                <th>Wallet</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="agentList">
+            <!-- Data load hoga yahan -->
+        </tbody>
+    </table>
+
+    <!-- Sound for Notification -->
+    <audio id="notifSound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // 1. Real-time Agents List
+    let firstLoad = true;
+    db.collection("admins").orderBy("createdAt", "desc").onSnapshot(snap => {
+        let html = "";
+        let totalIndiaMoney = 0;
+
+        snap.forEach(doc => {
+            const d = doc.data();
+            totalIndiaMoney += (d.totalBalance || 0);
+            
+            const statusClass = "status-" + d.status;
+            html += `<tr>
+                <td>${d.name}</td>
+                <td>${d.username}</td>
+                <td class="${statusClass}">${d.status.toUpperCase()}</td>
+                <td>₹${d.totalBalance || 0}</td>
+                <td>
+                    <button class="btn btn-approve" onclick="updateAgent('${doc.id}', 'active')">Approve</button>
+                    <button class="btn btn-block" onclick="updateAgent('${doc.id}', 'blocked')">Block</button>
+                </td>
+            </tr>`;
+        });
+
+        document.getElementById("agentList").innerHTML = html;
+        document.getElementById("grandTotal").innerText = "₹" + totalIndiaMoney;
+
+        // Beep Sound logic: Agar naya agent aaye aur page khula ho
+        if (!firstLoad && snap.docChanges().some(change => change.type === "added")) {
+            document.getElementById("notifSound").play();
+            alert("Nayi Agent Application Aayi Hai!");
+        }
+        firstLoad = false;
+    });
+
+    // 2. Approve/Block Function
+    async function updateAgent(id, newStatus) {
+        if(confirm("Kya aap is Agent ka status " + newStatus + " karna chahte hain?")) {
+            await db.collection("admins").doc(id).update({ status: newStatus });
+            alert("Updated Successfully!");
+        }
+    }
+</script>
+</body>
+</html>
