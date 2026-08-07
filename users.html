@@ -7,133 +7,96 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; }
-        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; position: relative; }
-        .logout-btn { position: absolute; right: 10px; top: 15px; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        
-        .container { padding: 15px; max-width: 500px; margin: 0 auto; }
-        
-        /* WALLET CARD */
-        .balance-card { background: white; color: #1e293b; padding: 20px; border-radius: 20px; text-align: center; margin-top: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .balance-amt { font-size: 2.5rem; font-weight: 800; color: #059669; margin: 5px 0; }
-        .btn-recharge { display: block; background: #fbbf24; color: black; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 10px; font-size: 1rem; }
-
-        /* BETTING FORM */
-        .bet-box { background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-top: 20px; }
-        .bet-box h3 { margin-top: 0; color: #fbbf24; font-size: 1.1rem; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        label { display: block; margin-top: 10px; font-size: 0.8rem; color: #94a3b8; }
-        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-size: 1rem; }
-        .btn-submit { width: 100%; background: #3b82f6; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 1.1rem; }
-
-        /* HISTORY */
-        .history-box { margin-top: 25px; }
-        .bet-card { background: #1a202c; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #64748b; }
-        .win { border-left-color: #10b981; color: #10b981; }
-        .loss { border-left-color: #ef4444; color: #ef4444; }
+        body { font-family: sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; text-align: center; }
+        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; }
+        .card { background: white; color: black; width: 90%; max-width: 400px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .balance-amt { font-size: 2.5rem; font-weight: bold; color: #059669; }
+        .btn-recharge { display: block; background: #fbbf24; color: black; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+        .bet-box { background: #1e293b; width: 90%; max-width: 400px; margin: 20px auto; padding: 20px; border-radius: 15px; border: 1px solid #334155; text-align: left; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #0f172a; color: white; box-sizing: border-box; }
+        .btn-bet { width: 100%; background: #3b82f6; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="logout-btn" onclick="logout()">LOGOUT</button>
-        <h2 id="uName" style="margin:0; font-size: 1.2rem;">Namaste, User</h2>
-        <p style="margin:5px 0 0; font-size: 11px; opacity:0.7;">Agent Code: <span id="myAgent">--</span></p>
+        <h3 id="uName">Loading...</h3>
+        <p style="font-size: 12px; opacity:0.8;">Agent Code: <span id="myAgentDisplay">--</span></p>
     </div>
 
-    <div class="container">
-        <!-- Balance & Recharge -->
-        <div class="balance-card">
-            <div style="font-size: 0.9rem; color: #64748b;">Current Balance</div>
-            <div class="balance-amt">₹<span id="bal">0</span></div>
-            <a href="#" id="rechargeLink" class="btn-recharge">➕ RECHARGE WALLET</a>
-        </div>
+    <div class="card">
+        <small>Available Balance</small>
+        <div class="balance-amt">₹<span id="wallet-bal">0</span></div>
+        <!-- Recharge Button -->
+        <a href="#" id="zypora-link" class="btn-recharge" target="_blank">➕ RECHARGE WALLET</a>
+    </div>
 
-        <!-- Betting Form -->
-        <div class="bet-box">
-            <h3>Boli Lagayein (Place Bet)</h3>
-            <label>Market Chunein:</label>
-            <select id="mkt">
-                <option value="DESAWAR">DESAWAR (05:00 AM)</option>
-                <option value="FARIDABAD">FARIDABAD (06:00 PM)</option>
-                <option value="GHAZIABAD">GHAZIABAD (08:15 PM)</option>
-                <option value="GALI">GALI (11:50 PM)</option>
-            </select>
-
-            <label>Number Daalein (00-99):</label>
-            <input type="text" id="num" placeholder="Eg: 75" maxlength="2">
-
-            <label>Paisa (Amount ₹):</label>
-            <input type="number" id="amt" placeholder="Minimum ₹10">
-
-            <button class="btn-submit" onclick="placeBet()">CONFIRM BET ✅</button>
-        </div>
-
-        <!-- Bet History -->
-        <div class="history-box">
-            <h4 style="color: #94a3b8;">Recent Bets</h4>
-            <div id="history-list">
-                <p style="font-size: 12px; color: #475569;">No bets found...</p>
-            </div>
-        </div>
+    <div class="bet-box">
+        <label>Market:</label>
+        <select id="mkt"><option value="GALI">GALI</option><option value="DESAWAR">DESAWAR</option></select>
+        <label>Number (00-99):</label>
+        <input type="text" id="bet-num" placeholder="Eg: 75">
+        <label>Amount (₹):</label>
+        <input type="number" id="bet-amt" placeholder="Min 10">
+        <button class="btn-bet" onclick="confirmBet()">PLACE BET NOW</button>
     </div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
         const userId = localStorage.getItem("userId");
         if(!userId) window.location.href = "login_user.html";
 
-        // 1. Live Data & Recharge Link
+        // 1. Live Data Load
         db.collection("users").doc(userId).onSnapshot(doc => {
             if(doc.exists) {
-                const d = doc.data();
-                document.getElementById("uName").innerText = "Namaste, " + d.name;
-                document.getElementById("myAgent").innerText = d.agentId || "DIRECT";
-                document.getElementById("bal").innerText = d.wallet || 0;
-
-                // SETUP RECHARGE LINK (Bhai apna link yahan dalo)
-                const zyporaLink = "https://zyphorapay.com/payment?key=WE9lGjPq1EbLtdjm2PLUXNCGLs49JCMJEAwzxGLE"; 
-                document.getElementById("rechargeLink").href = zyporaLink + "&remark=" + userId;
+                const data = doc.data();
+                document.getElementById("uName").innerText = "Welcome, " + data.name;
+                document.getElementById("myAgentDisplay").innerText = data.agentId || "DIRECT";
+                document.getElementById("wallet-bal").innerText = data.wallet || 0;
+                
+                // Recharge Link Fix
+                const myLink = "https://zyporapay.com/pay/YOUR_ID"; // <--- Yahan apna link dalo
+                document.getElementById("zypora-link").href = myLink + "&remark=" + userId;
             }
-        });
+        }, (error) => { alert("Database Error: " + error.message); });
 
-        // 2. Load History
-        db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(5).onSnapshot(snap => {
-            let html = "";
-            snap.forEach(doc => {
-                const b = doc.data();
-                const sClass = b.status === "win" ? "win" : b.status === "loss" ? "loss" : "";
-                html += <div class="bet-card ${sClass}"><div><b>${b.gameName}</b> [${b.number}]</div><div>₹${b.amount} - ${b.status.toUpperCase()}</div></div>;
-            });
-            if(html) document.getElementById("history-list").innerHTML = html;
-        });
-
-        // 3. Bet Place Logic
-        async function placeBet() {
+        // 2. Bet lagane ka function
+        async function confirmBet() {
             const m = document.getElementById("mkt").value;
-            const n = document.getElementById("num").value.trim();
-            const a = parseInt(document.getElementById("amt").value);
+            const n = document.getElementById("bet-num").value.trim();
+            const a = parseInt(document.getElementById("bet-amt").value);
 
-            if(!n || isNaN(a) || a < 10) return alert("Bhai sahi details dalo!");
+            if(!n || isNaN(a) || a < 10) return alert("Details sahi dalo!");
 
-            const userRef = db.collection("users").doc(userId);
-            const uDoc = await userRef.get();
-            if(uDoc.data().wallet < a) return alert("Balance kam hai, Recharge karein!");
+            try {
+                const userRef = db.collection("users").doc(userId);
+                const userDoc = await userRef.get();
+                const bal = userDoc.data().wallet;
 
-            await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-a) });
-            await db.collection("bets").add({
-                userId, agentId: document.getElementById("myAgent").innerText,
-                gameName: m, number: n, amount: a, status: "pending", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Bet Lag Gayi! Good Luck.");
-            document.getElementById("num").value = "";
-            document.getElementById("amt").value = "";
+                if(bal < a) return alert("Balance kam hai!");
+
+                // Wallet se paisa kato
+                await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-a) });
+
+                // Bet entry dalo
+                await db.collection("bets").add({
+                    userId: userId,
+                    agentId: document.getElementById("myAgentDisplay").innerText,
+                    gameName: m,
+                    number: n,
+                    amount: a,
+                    status: "pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("Bet Lag Gayi! ✅");
+                document.getElementById("bet-num").value = "";
+                document.getElementById("bet-amt").value = "";
+            } catch (e) { alert("Bet Error: " + e.message); }
         }
-
-        function logout() { localStorage.clear(); window.location.href = "index.html"; }
     </script>
 </body>
 </html>
