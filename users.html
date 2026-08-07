@@ -1,106 +1,110 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khaiwal Dashboard - Number Samrat</title>
+    <title>User Dashboard - Number Samrat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: sans-serif; background: #0a0f1e; color: white; margin: 0; padding: 0; }
-        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; position: relative; }
-        .logout-btn { position: absolute; right: 10px; top: 20px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; }
-        .stat-card p { margin: 5px 0 0; font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
-        .load-section { background: #1e293b; border-radius: 20px; padding: 20px; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid #334155; text-align: center; }
-        .num-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 50px; font-weight: bold; }
-        .btn-settle { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 70px; margin: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; text-align: center; }
+        .header { background: #1e293b; color: white; padding: 25px; border-bottom: 2px solid #fbbf24; position: relative; }
+        .logout { position: absolute; right: 10px; top: 10px; background: red; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .card { background: white; margin: -20px auto 20px; width: 85%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .balance { font-size: 2.2rem; color: #10b981; font-weight: bold; }
+        .btn-add { display: block; background: #fbbf24; color: black; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+        .bet-box { background: white; width: 85%; margin: 20px auto; padding: 20px; border-radius: 15px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-bet { background: #3b82f6; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .history-item { background: white; padding: 10px; margin-top: 10px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; border-left: 5px solid #3b82f6; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="logout-btn" onclick="logout()">Logout</button>
-        <h2 style="margin:0;">KHAIWAL PANEL 👑</h2>
+        <button class="logout" onclick="logout()">Logout</button>
+        <h3>Namaste, <span id="uName">User</span></h3>
+        <p style="font-size: 11px; opacity: 0.7;">Agent Code: <span id="myAgent">--</span></p>
     </div>
 
-    <div class="container">
-        <div class="stat-grid">
-            <div class="stat-card"><h3>Collection</h3><p id="totalBalance">₹0</p></div>
-            <div class="stat-card"><h3>Active Bets</h3><p id="pendingCount">0</p></div>
-        </div>
-
-        <div class="load-section">
-            <h2>Live Load (Market-wise)</h2>
-            <table>
-                <thead><tr><th>Market</th><th>No.</th><th>Load</th></tr></thead>
-                <tbody id="load-list"></tbody>
-            </table>
-        </div>
-
-        <div style="background: #0f172a; padding: 20px; border-radius: 15px; border: 1px dashed #475569;">
-            <h3 style="color:#ef4444;">Manual Settle</h3>
-            <input type="text" id="m-market" placeholder="GALI">
-            <input type="text" id="m-num" placeholder="00" maxlength="2">
-            <button class="btn-settle" onclick="emergencySettle()">SETTLE NOW</button>
-        </div>
+    <div class="card">
+        <div style="font-size: 13px; color: #64748b;">Available Balance</div>
+        <div class="balance">₹<span id="bal">0</span></div>
+        <a href="#" id="rechargeBtn" class="btn-add">➕ RECHARGE NOW</a>
     </div>
 
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    <div class="bet-box">
+        <label>Market Chunein:</label>
+        <select id="mkt"><option value="GALI">GALI</option><option value="DESAWAR">DESAWAR</option><option value="FARIDABAD">FARIDABAD</option></select>
+        <input type="text" id="num" placeholder="Number (00-99)" maxlength="2">
+        <input type="number" id="amt" placeholder="Amount ₹">
+        <button class="btn-bet" onclick="placeBet()">PLACE BET</button>
+    </div>
 
-        // --- SECURITY CHECK ---
-        const userId = localStorage.getItem("userId");
-        const role = localStorage.getItem("role");
-        if (!userId || role !== "admin") { window.location.href = "login.html"; }
+    <div id="history" style="width:90%; margin: 0 auto; text-align: left; padding-bottom: 30px;">
+        <h4>Recent Bets</h4>
+    </div>
 
-        db.collection("khaiwal").doc("stats").onSnapshot(doc => { if(doc.exists) document.getElementById("totalBalance").innerText = "₹" + doc.data().totalBalance; });
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        db.collection("bets").where("status", "==", "pending").onSnapshot(snap => {
-            document.getElementById("pendingCount").innerText = snap.size;
-            let grouped = {};
-            snap.forEach(doc => {
-                const b = doc.data();
-                const key = b.gameName + "-" + b.number;
-                grouped[key] = (grouped[key] || 0) + b.amount;
-            });
-            let html = "";
-            for(let k in grouped) {
-                const [m, n] = k.split("-");
-                html += <tr><td>${m}</td><td><span class="num-badge">${n}</span></td><td>₹${grouped[k]}</td></tr>;
-            }
-            document.getElementById("load-list").innerHTML = html || "<tr><td colspan='3'>No bets</td></tr>";
-        });
+    const userId = localStorage.getItem("userId");
+    if(!userId) window.location.href = "index.html";
 
-        async function emergencySettle() {
-            const m = document.getElementById("m-market").value.toUpperCase();
-            const n = document.getElementById("m-num").value.trim();
-            if(!m || !n) return alert("Details dalo!");
-            const snap = await db.collection("bets").where("gameName","==",m).where("status","==","pending").get();
-            if(snap.empty) return alert("No bets found.");
-            const batch = db.batch();
-            snap.forEach(doc => {
-                const b = doc.data();
-                const amt = parseInt(b.amount);
-                if (b.number === n) {
-                    batch.update(db.collection("users").doc(b.userId), { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
-                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
-                    batch.update(doc.ref, { status: "win" });
-                } else {
-                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(amt) });
-                    batch.update(doc.ref, { status: "loss" });
-                }
-            });
-            await batch.commit(); alert("Settle Done!");
+    let userAgent = "DIRECT";
+
+    // 1. Profile aur Balance Load
+    db.collection("users").doc(userId).onSnapshot(doc => {
+        if(doc.exists) {
+            const d = doc.data();
+            userAgent = d.agentId || "DIRECT";
+            document.getElementById("bal").innerText = d.wallet;
+            document.getElementById("uName").innerText = d.name;
+            document.getElementById("myAgent").innerText = userAgent;
+            // Zyporapay link with Remark
+            document.getElementById("rechargeBtn").href = "https://zyporapay.com/pay/YOUR_ID&remark=" + userId;
         }
-        function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    </script>
+    });
+
+    // 2. Bet History
+    db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(5).onSnapshot(snap => {
+        let h = "<h4>Recent Bets</h4>";
+        snap.forEach(doc => {
+            const b = doc.data();
+            h += <div class="history-item"><div><b>${b.gameName}</b> [${b.number}]</div><div>₹${b.amount} - ${b.status}</div></div>;
+        });
+        document.getElementById("history").innerHTML = h;
+    });
+
+    // 3. Place Bet Logic
+    async function placeBet() {
+        const m = document.getElementById("mkt").value;
+        const n = document.getElementById("num").value;
+        const a = parseInt(document.getElementById("amt").value);
+
+        if(!n || isNaN(a) || a < 10) return alert("Sahi details dalo!");
+
+        const userRef = db.collection("users").doc(userId);
+        const uDoc = await userRef.get();
+        if(uDoc.data().wallet < a) return alert("Balance kam hai!");
+
+        await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-a) });
+        
+        // BET MEIN AGENT ID BHI JAYEGI
+        await db.collection("bets").add({
+            userId: userId,
+            agentId: userAgent, // <--- Ye hai asli link
+            gameName: m,
+            number: n,
+            amount: a,
+            status: "pending",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Bet Lag Gayi!");
+    }
+
+    function logout() { localStorage.clear(); window.location.href = "index.html"; }
+</script>
 </body>
 </html>
