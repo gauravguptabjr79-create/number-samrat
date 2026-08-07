@@ -55,4 +55,96 @@
             </select>
 
             <label>Number Daalein (00-99):</label>
-            <input type="text" id="bet-number" placeholder="Eg
+            <input type="text" id="bet-number" placeholder="Eg: 75" maxlength="2">
+
+            <label>Amount (₹):</label>
+            <input type="number" id="bet-amount" placeholder="Min ₹10">
+
+            <button class="btn-bet" onclick="placeBet()">PLACE BET (Boli Lagayein)</button>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <h3 style="color: #fbbf24;">Recent Bets</h3>
+        <div id="history-list">
+            <p style="color: #475569; font-size: 0.8rem;">No bets yet...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw",
+            authDomain: "number-samrat.firebaseapp.com",
+            projectId: "number-samrat",
+            storageBucket: "number-samrat.firebasestorage.app",
+            messagingSenderId: "154722781783",
+            appId: "1:154722781783:web:7b6136cec1c34a11b3f112"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Check Login
+        const userId = localStorage.getItem("userId");
+        if (!userId) { window.location.href = "login.html"; }
+
+        // --- 2. LIVE BALANCE & RECHARGE LINK ---
+        db.collection("users").doc(userId).onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById("wallet-balance").innerText = data.wallet;
+                document.getElementById("user-name").innerText = "Namaste, " + data.name;
+
+                // ZYPORAPAY LINK SETUP
+                // Bhai, niche apna asli Zyporapay link dalo
+                const baseLink = "https://zyporapay.com/pay/YOUR_MERCHANT_ID"; 
+                document.getElementById("recharge-btn").href = baseLink + "&remark=" + userId;
+            }
+        });
+
+        // --- 3. BET HISTORY ---
+        db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(10).onSnapshot(snap => {
+            let html = "";
+            snap.forEach(doc => {
+                const b = doc.data();
+                const sClass = "status-" + b.status;
+                html += `<div class="bet-card ${sClass}">
+                    <div><b>${b.gameName}</b><br><small>No: ${b.number}</small></div>
+                    <div style="text-align:right;">₹${b.amount}<br><b>${b.status.toUpperCase()}</b></div>
+                </div>`;
+            });
+            if(html) document.getElementById("history-list").innerHTML = html;
+        });
+
+        // --- 4. PLACE BET LOGIC ---
+        async function placeBet() {
+            const game = document.getElementById("market").value;
+            const num = document.getElementById("bet-number").value.trim();
+            const amt = parseInt(document.getElementById("bet-amount").value);
+
+            if(!num || isNaN(amt) || amt < 10) { alert("Sahi details bhariye!"); return; }
+
+            const userRef = db.collection("users").doc(userId);
+            const userDoc = await userRef.get();
+            const currentBal = userDoc.data().wallet;
+
+            if(currentBal < amt) { alert("Balance kam hai, Recharge karein!"); return; }
+
+            // Paisa kaato aur entry dalo
+            await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-amt) });
+            await db.collection("bets").add({
+                userId: userId,
+                gameName: game,
+                number: num,
+                amount: amt,
+                status: "pending",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            alert("Bet Lag Gayi! Best of Luck.");
+            document.getElementById("bet-number").value = "";
+            document.getElementById("bet-amount").value = "";
+        }
+    </script>
+</body>
+</html>
