@@ -3,63 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - Number Samrat</title>
+    <title>Khaiwal Dashboard - Number Samrat</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; }
-        .header { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 25px 15px; text-align: center; border-bottom: 2px solid #fbbf24; position: relative; }
-        .logout-btn { position: absolute; right: 10px; top: 10px; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
-        .balance-card { background: white; color: #1e293b; width: 85%; margin: -30px auto 20px; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .balance-amt { font-size: 2.2rem; font-weight: 800; color: #059669; }
-        .btn-recharge { display: block; background: #fbbf24; color: black; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .game-section { padding: 20px; }
-        .input-group { background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.9rem; }
-        select, input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; box-sizing: border-box; }
-        .btn-bet { width: 100%; background: #3b82f6; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-        .history-section { padding: 0 20px 40px; }
-        .bet-card { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #64748b; }
-        .status-win { border-left-color: #10b981; color: #10b981; }
-        .status-loss { border-left-color: #ef4444; color: #ef4444; }
-        .status-pending { border-left-color: #fbbf24; color: #fbbf24; }
+        body { font-family: sans-serif; background: #0a0f1e; color: white; margin: 0; padding: 0; }
+        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; position: relative; }
+        .logout-btn { position: absolute; right: 10px; top: 20px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; }
+        .stat-card p { margin: 5px 0 0; font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
+        .load-section { background: #1e293b; border-radius: 20px; padding: 20px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #334155; text-align: center; }
+        .num-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 50px; font-weight: bold; }
+        .btn-settle { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 70px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <button class="logout-btn" onclick="logout()">Logout</button>
-        <h2 style="margin:0; color: #fbbf24;">Number Samrat 👑</h2>
-        <p id="user-name" style="margin:5px 0 0 0; opacity: 0.8;">Namaste...</p>
+        <h2 style="margin:0;">KHAIWAL PANEL 👑</h2>
     </div>
 
-    <div class="balance-card">
-        <div style="font-size: 0.9rem; color: #64748b;">Aapka Balance</div>
-        <div class="balance-amt">₹<span id="wallet-balance">0</span></div>
-        <a href="#" id="recharge-btn" class="btn-recharge">➕ ADD MONEY (RECHARGE)</a>
-    </div>
-
-    <div class="game-section">
-        <div class="input-group">
-            <label>Market Chunein:</label>
-            <select id="market">
-                <option value="DESAWAR">DESAWAR (05:00 AM)</option>
-                <option value="FARIDABAD">FARIDABAD (06:00 PM)</option>
-                <option value="GHAZIABAD">GHAZIABAD (08:15 PM)</option>
-                <option value="GALI">GALI (11:50 PM)</option>
-            </select>
-            <label>Number Daalein (00-99):</label>
-            <input type="text" id="bet-number" placeholder="Eg: 75" maxlength="2">
-            <label>Amount (₹):</label>
-            <input type="number" id="bet-amount" placeholder="Min ₹10">
-            <button class="btn-bet" onclick="placeBet()">PLACE BET NOW</button>
+    <div class="container">
+        <div class="stat-grid">
+            <div class="stat-card"><h3>Collection</h3><p id="totalBalance">₹0</p></div>
+            <div class="stat-card"><h3>Active Bets</h3><p id="pendingCount">0</p></div>
         </div>
-    </div>
 
-    <div class="history-section">
-        <h3 style="color: #fbbf24;">Recent Bets</h3>
-        <div id="history-list"></div>
+        <div class="load-section">
+            <h2>Live Load (Market-wise)</h2>
+            <table>
+                <thead><tr><th>Market</th><th>No.</th><th>Load</th></tr></thead>
+                <tbody id="load-list"></tbody>
+            </table>
+        </div>
+
+        <div style="background: #0f172a; padding: 20px; border-radius: 15px; border: 1px dashed #475569;">
+            <h3 style="color:#ef4444;">Manual Settle</h3>
+            <input type="text" id="m-market" placeholder="GALI">
+            <input type="text" id="m-num" placeholder="00" maxlength="2">
+            <button class="btn-settle" onclick="emergencySettle()">SETTLE NOW</button>
+        </div>
     </div>
 
     <script>
@@ -67,46 +56,50 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // --- SECURITY CHECK ---
         const userId = localStorage.getItem("userId");
-        if (!userId) { window.location.href = "login.html"; }
+        const role = localStorage.getItem("role");
+        if (!userId || role !== "admin") { window.location.href = "login.html"; }
 
-        db.collection("users").doc(userId).onSnapshot((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                document.getElementById("wallet-balance").innerText = data.wallet;
-                document.getElementById("user-name").innerText = "Namaste, " + data.name;
-                const baseLink = "https://zyporapay.com/pay/YOUR_MERCHANT_ID"; 
-                document.getElementById("recharge-btn").href = baseLink + "&remark=" + userId;
-            }
-        });
+        db.collection("khaiwal").doc("stats").onSnapshot(doc => { if(doc.exists) document.getElementById("totalBalance").innerText = "₹" + doc.data().totalBalance; });
 
-        db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(10).onSnapshot(snap => {
-            let html = "";
+        db.collection("bets").where("status", "==", "pending").onSnapshot(snap => {
+            document.getElementById("pendingCount").innerText = snap.size;
+            let grouped = {};
             snap.forEach(doc => {
                 const b = doc.data();
-                const sClass = "status-" + b.status;
-                html += <div class="bet-card ${sClass}"><div><b>${b.gameName}</b><br><small>No: ${b.number}</small></div><div style="text-align:right;">₹${b.amount}<br><b>${b.status.toUpperCase()}</b></div></div>;
+                const key = b.gameName + "-" + b.number;
+                grouped[key] = (grouped[key] || 0) + b.amount;
             });
-            document.getElementById("history-list").innerHTML = html || "<p>No bets yet...</p>";
+            let html = "";
+            for(let k in grouped) {
+                const [m, n] = k.split("-");
+                html += <tr><td>${m}</td><td><span class="num-badge">${n}</span></td><td>₹${grouped[k]}</td></tr>;
+            }
+            document.getElementById("load-list").innerHTML = html || "<tr><td colspan='3'>No bets</td></tr>";
         });
 
-        async function placeBet() {
-            const game = document.getElementById("market").value;
-            const num = document.getElementById("bet-number").value.trim();
-            const amt = parseInt(document.getElementById("bet-amount").value);
-            if(!num || isNaN(amt) || amt < 10) return alert("Sahi details dalo!");
-
-            const userRef = db.collection("users").doc(userId);
-            const userDoc = await userRef.get();
-            if(userDoc.data().wallet < amt) return alert("Balance kam hai!");
-
-            await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-amt) });
-            await db.collection("bets").add({ userId, gameName: game, number: num, amount: amt, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Bet Lag Gayi!");
-            document.getElementById("bet-number").value = "";
-            document.getElementById("bet-amount").value = "";
+        async function emergencySettle() {
+            const m = document.getElementById("m-market").value.toUpperCase();
+            const n = document.getElementById("m-num").value.trim();
+            if(!m || !n) return alert("Details dalo!");
+            const snap = await db.collection("bets").where("gameName","==",m).where("status","==","pending").get();
+            if(snap.empty) return alert("No bets found.");
+            const batch = db.batch();
+            snap.forEach(doc => {
+                const b = doc.data();
+                const amt = parseInt(b.amount);
+                if (b.number === n) {
+                    batch.update(db.collection("users").doc(b.userId), { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
+                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
+                    batch.update(doc.ref, { status: "win" });
+                } else {
+                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(amt) });
+                    batch.update(doc.ref, { status: "loss" });
+                }
+            });
+            await batch.commit(); alert("Settle Done!");
         }
-
         function logout() { localStorage.clear(); window.location.href = "login.html"; }
     </script>
 </body>
