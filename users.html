@@ -1,104 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard - Number Samrat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; text-align: center; }
-        .header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; }
-        .wallet-card { background: white; margin: -30px auto 20px; width: 85%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .balance { font-size: 2rem; color: #10b981; font-weight: bold; }
-        .bet-form { background: white; width: 85%; margin: 20px auto; padding: 20px; border-radius: 15px; text-align: left; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-bet { background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-add { background: #fbbf24; color: black; border: none; padding: 10px; width: 100%; border-radius: 8px; font-weight: bold; text-decoration: none; display: block; margin-top: 10px; }
-        .history { width: 90%; margin: 20px auto; text-align: left; }
-        .history-item { background: white; padding: 10px; margin-bottom: 8px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; border-left: 5px solid #ccc; }
-        .win { border-left-color: #10b981; color: #10b981; }
-        .loss { border-left-color: #ef4444; color: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 0; }
+        .header { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 25px 15px; text-align: center; border-bottom: 2px solid #fbbf24; }
+        .balance-card { background: white; color: #1e293b; width: 85%; margin: -30px auto 20px; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .balance-amt { font-size: 2.2rem; font-weight: 800; color: #059669; }
+        
+        /* RECHARGE BUTTON */
+        .btn-recharge { display: block; background: #fbbf24; color: black; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 15px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .game-section { padding: 20px; }
+        .input-group { background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 0.9rem; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; box-sizing: border-box; }
+        .btn-bet { width: 100%; background: #3b82f6; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        
+        .history-section { padding: 0 20px 40px; }
+        .bet-card { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #64748b; }
+        .status-win { border-left-color: #10b981; color: #10b981; }
+        .status-loss { border-left-color: #ef4444; color: #ef4444; }
+        .status-pending { border-left-color: #fbbf24; color: #fbbf24; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h3>Welcome, <span id="userName">User</span></h3>
-    <p style="font-size: 12px; opacity: 0.8;">India's Best Number Platform</p>
-</div>
+    <div class="header">
+        <h2 style="margin:0; color: #fbbf24;">Number Samrat 👑</h2>
+        <p id="user-name" style="margin:5px 0 0 0; opacity: 0.8;">Loading...</p>
+    </div>
 
-<div class="wallet-card">
-    <div style="font-size: 14px; color: #64748b;">Current Balance</div>
-    <div class="balance">₹<span id="balance">0</span></div>
-    <!-- Yahan apna Payment Gateway Link dalo -->
-    <a href="https://zyphorapay.com/payment?key=TL0AR4zuPHJNnQAyCqydN0O47pdSufJsEv4Q75Dh" class="btn-add">➕ RECHARGE WALLET</a>
-</div>
+    <div class="balance-card">
+        <div style="font-size: 0.9rem; color: #64748b;">Aapka Balance</div>
+        <div class="balance-amt">₹<span id="wallet-balance">0</span></div>
+        
+        <!-- RECHARGE BUTTON (Zyporapay Link yahan update hoga) -->
+        <a href="#" id="recharge-btn" class="btn-recharge">➕ ADD MONEY (RECHARGE)</a>
+    </div>
 
-<div class="bet-form">
-    <label>Select Market:</label>
-    <select id="gameName">
-        <option value="DESAWAR">DESAWAR (05:00 AM)</option>
-        <option value="FARIDABAD">FARIDABAD (06:00 PM)</option>
-        <option value="GHAZIABAD">GHAZIABAD (08:15 PM)</option>
-        <option value="GALI">GALI (11:50 PM)</option>
-    </select>
-    <input type="text" id="betNum" placeholder="Enter Number (00-99)" maxlength="2">
-    <input type="number" id="betAmt" placeholder="Amount (₹)">
-    <button class="btn-bet" onclick="placeBet()">PLACE BET NOW</button>
-</div>
+    <div class="game-section">
+        <div class="input-group">
+            <label>Market Chunein:</label>
+            <select id="market">
+                <option value="DESAWAR">DESAWAR (05:00 AM)</option>
+                <option value="FARIDABAD">FARIDABAD (06:00 PM)</option>
+                <option value="GHAZIABAD">GHAZIABAD (08:15 PM)</option>
+                <option value="GALI">GALI (11:50 PM)</option>
+            </select>
 
-<div class="history">
-    <h4>Recent Bets</h4>
-    <div id="betHistory"></div>
-</div>
-
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const userId = localStorage.getItem("userId");
-    if(!userId) window.location.href = "login.html";
-
-    // 1. Load Profile & Live Balance
-    db.collection("users").doc(userId).onSnapshot((doc) => {
-        const data = doc.data();
-        document.getElementById("balance").innerText = data.wallet;
-        document.getElementById("userName").innerText = data.name;
-    });
-
-    // 2. Load Bet History
-    db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(10).onSnapshot(snap => {
-        let html = "";
-        snap.forEach(doc => {
-            const b = doc.data();
-            const statusClass = b.status === "win" ? "win" : b.status === "loss" ? "loss" : "";
-            html += `<div class="history-item ${statusClass}">
-                <div><b>${b.gameName}</b><br><small>${b.number}</small></div>
-                <div style="text-align:right;">₹${b.amount}<br><b>${b.status.toUpperCase()}</b></div>
-            </div>`;
-        });
-        document.getElementById("betHistory").innerHTML = html;
-    });
-
-    // 3. Place Bet
-    async function placeBet() {
-        const game = document.getElementById("gameName").value;
-        const num = document.getElementById("betNum").value;
-        const amt = parseInt(document.getElementById("betAmt").value);
-
-        if(!num || isNaN(amt) || amt < 10) return alert("Sahi number aur minimum ₹10 dalo!");
-
-        const userRef = db.collection("users").doc(userId);
-        const doc = await userRef.get();
-        if(doc.data().wallet < amt) return alert("Balance kam hai!");
-
-        await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-amt) });
-        await db.collection("bets").add({
-            userId: userId, gameName: game, number: num, amount: amt, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert("Bet Lag Gayi! Good Luck.");
-    }
-</script>
-</body>
-</html>
+            <label>Number Daalein (00-99):</label>
+            <input type="text" id="bet-number" placeholder="Eg
