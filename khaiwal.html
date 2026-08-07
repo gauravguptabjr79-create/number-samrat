@@ -1,106 +1,73 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khaiwal Dashboard - Number Samrat</title>
+    <title>Agent Dashboard - Number Samrat</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: sans-serif; background: #0a0f1e; color: white; margin: 0; padding: 0; }
-        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; position: relative; }
-        .logout-btn { position: absolute; right: 10px; top: 20px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; }
-        .stat-card p { margin: 5px 0 0; font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
-        .load-section { background: #1e293b; border-radius: 20px; padding: 20px; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid #334155; text-align: center; }
-        .num-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 50px; font-weight: bold; }
-        .btn-settle { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 70px; margin: 5px; }
+        body { font-family: sans-serif; background: #0a0f1e; color: white; padding: 20px; text-align: center; }
+        .header { background: #1e293b; padding: 15px; border-bottom: 2px solid #fbbf24; margin-bottom: 20px; }
+        .stat-box { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; }
+        th, td { padding: 12px; border: 1px solid #334155; }
+        th { background: #fbbf24; color: black; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="logout-btn" onclick="logout()">Logout</button>
-        <h2 style="margin:0;">KHAIWAL PANEL 👑</h2>
+        <h2>Agent: <span id="agentName">--</span></h2>
+        <button onclick="logout()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Logout</button>
     </div>
 
-    <div class="container">
-        <div class="stat-grid">
-            <div class="stat-card"><h3>Collection</h3><p id="totalBalance">₹0</p></div>
-            <div class="stat-card"><h3>Active Bets</h3><p id="pendingCount">0</p></div>
-        </div>
-
-        <div class="load-section">
-            <h2>Live Load (Market-wise)</h2>
-            <table>
-                <thead><tr><th>Market</th><th>No.</th><th>Load</th></tr></thead>
-                <tbody id="load-list"></tbody>
-            </table>
-        </div>
-
-        <div style="background: #0f172a; padding: 20px; border-radius: 15px; border: 1px dashed #475569;">
-            <h3 style="color:#ef4444;">Manual Settle</h3>
-            <input type="text" id="m-market" placeholder="GALI">
-            <input type="text" id="m-num" placeholder="00" maxlength="2">
-            <button class="btn-settle" onclick="emergencySettle()">SETTLE NOW</button>
-        </div>
+    <div class="stat-box">
+        <small>Mera Total Collection</small>
+        <h1 id="myColl" style="color:#fbbf24;">₹0</h1>
     </div>
 
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    <h3>My Users Load</h3>
+    <table>
+        <thead><tr><th>Market</th><th>No.</th><th>Amount</th></tr></thead>
+        <tbody id="loadList"></tbody>
+    </table>
 
-        // --- SECURITY CHECK ---
-        const userId = localStorage.getItem("userId");
-        const role = localStorage.getItem("role");
-        if (!userId || role !== "admin") { window.location.href = "login.html"; }
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        db.collection("khaiwal").doc("stats").onSnapshot(doc => { if(doc.exists) document.getElementById("totalBalance").innerText = "₹" + doc.data().totalBalance; });
+    const agentId = localStorage.getItem("userId");
+    const role = localStorage.getItem("role");
 
-        db.collection("bets").where("status", "==", "pending").onSnapshot(snap => {
-            document.getElementById("pendingCount").innerText = snap.size;
+    if(!agentId || role !== "admin") window.location.href = "index.html";
+
+    // 1. Get Agent Phone (Username)
+    db.collection("admins").doc(agentId).get().then(doc => {
+        const agentPhone = doc.data().username;
+        document.getElementById("agentName").innerText = agentPhone;
+
+        // 2. Load Only THIS Agent's Bets
+        db.collection("bets").where("agentId", "==", agentPhone).where("status", "==", "pending").onSnapshot(snap => {
+            let total = 0;
             let grouped = {};
-            snap.forEach(doc => {
-                const b = doc.data();
+            snap.forEach(d => {
+                const b = d.data();
+                total += b.amount;
                 const key = b.gameName + "-" + b.number;
                 grouped[key] = (grouped[key] || 0) + b.amount;
             });
+            document.getElementById("myColl").innerText = "₹" + total;
+            
             let html = "";
             for(let k in grouped) {
                 const [m, n] = k.split("-");
-                html += <tr><td>${m}</td><td><span class="num-badge">${n}</span></td><td>₹${grouped[k]}</td></tr>;
+                html += <tr><td>${m}</td><td>${n}</td><td>₹${grouped[k]}</td></tr>;
             }
-            document.getElementById("load-list").innerHTML = html || "<tr><td colspan='3'>No bets</td></tr>";
+            document.getElementById("loadList").innerHTML = html || "<tr><td colspan='3'>No bets</td></tr>";
         });
+    });
 
-        async function emergencySettle() {
-            const m = document.getElementById("m-market").value.toUpperCase();
-            const n = document.getElementById("m-num").value.trim();
-            if(!m || !n) return alert("Details dalo!");
-            const snap = await db.collection("bets").where("gameName","==",m).where("status","==","pending").get();
-            if(snap.empty) return alert("No bets found.");
-            const batch = db.batch();
-            snap.forEach(doc => {
-                const b = doc.data();
-                const amt = parseInt(b.amount);
-                if (b.number === n) {
-                    batch.update(db.collection("users").doc(b.userId), { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
-                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
-                    batch.update(doc.ref, { status: "win" });
-                } else {
-                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(amt) });
-                    batch.update(doc.ref, { status: "loss" });
-                }
-            });
-            await batch.commit(); alert("Settle Done!");
-        }
-        function logout() { localStorage.clear(); window.location.href = "login.html"; }
-    </script>
+    function logout() { localStorage.clear(); window.location.href = "index.html"; }
+</script>
 </body>
 </html>
