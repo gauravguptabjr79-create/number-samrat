@@ -58,7 +58,7 @@
                 document.getElementById("wallet-bal").innerText = data.wallet || 0;
                 
                 // Recharge Link Fix
-                const myLink = "https://zyporapay.com/pay/YOUR_ID"; // <--- Yahan apna link dalo
+                const myLink = "https://zyphorapay.com/payment?key=WE9lGjPq1EbLtdjm2PLUXNCGLs49JCMJEAwzxGLE"; // <--- Yahan apna link dalo
                 document.getElementById("zypora-link").href = myLink + "&remark=" + userId;
             }
         }, (error) => { alert("Database Error: " + error.message); });
