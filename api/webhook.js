@@ -7,34 +7,38 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 module.exports = async (req, res) => {
-    // Zyporapay POST request bhejta hai
     if (req.method === 'POST') {
         try {
             const data = req.body;
             
-            // Zyporapay ke data fields (Status 'SUCCESS' hona chahiye)
             if (data.status === 'SUCCESS') {
-                // Zyporapay mein hum userId ko 'remark' ya 'client_id' mein bhejenge
                 const userId = data.remark || data.client_id; 
                 const amount = parseFloat(data.amount);
 
                 if (userId && amount) {
                     const userRef = db.collection("users").doc(userId);
                     
-                    // Wallet mein paise jodo
+                    // 1. Wallet update karo
                     await userRef.update({
                         wallet: admin.firestore.FieldValue.increment(amount)
                     });
 
-                    console.log(Automatic Recharge: ₹${amount} added to ${userId});
+                    // 2. Recharge History mein record dalo (TAKI KHAIWAL DEKH SAKE)
+                    await db.collection("recharges").add({
+                        userId: userId,
+                        amount: amount,
+                        status: "SUCCESS",
+                        timestamp: admin.firestore.FieldValue.serverTimestamp()
+                    });
+
                     return res.status(200).send("OK");
                 }
             }
-            res.status(400).send("Payment not successful or data missing");
+            res.status(400).send("Invalid Data");
         } catch (err) {
-            res.status(500).send("Webhook Error: " + err.message);
+            res.status(500).send(err.message);
         }
     } else {
-        res.status(200).send("Zyporapay Webhook Active");
+        res.status(200).send("Webhook Active");
     }
 };
