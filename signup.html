@@ -1,25 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup - Number Samrat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 320px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .signup-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 350px; text-align: center; }
+        h2 { color: #10b981; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        .agent-code-box { background: #ecfdf5; border: 1px dashed #10b981; padding: 5px; border-radius: 8px; margin: 10px 0; }
+        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .login-link { margin-top: 15px; font-size: 13px; color: #64748b; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h2>New Registration</h2>
-    <input type="text" id="name" placeholder="Full Name">
-    <input type="text" id="phone" placeholder="Mobile Number">
-    <input type="password" id="pass" placeholder="Set Password">
-    <button onclick="reg()">Register Now</button>
-    <p style="margin-top:15px; font-size:13px;">Already have an account? <a href="login.html">Login</a></p>
+
+<div class="signup-card">
+    <h2>📝 New User</h2>
+    <p style="font-size: 12px; color: #94a3b8;">Apna account banayein aur khelna shuru karein.</p>
+    
+    <input type="text" id="name" placeholder="Apna Poora Naam">
+    <input type="text" id="phone" placeholder="Mobile Number (Login ID)">
+    <input type="password" id="pass" placeholder="Password Set Karein">
+    
+    <div class="agent-code-box">
+        <input type="text" id="agentCode" placeholder="Agent Code (Optional)" style="margin:0; border:none; background:transparent;">
+    </div>
+    <small style="color: #94a3b8; font-size: 10px;">Agent code matlab apne Khaiwal ka phone number.</small>
+
+    <button onclick="register()">Create Account</button>
+    
+    <div class="login-link">
+        Pehle se account hai? <a href="login_user.html" style="color: #3b82f6; font-weight: bold;">Login Karein</a>
+    </div>
 </div>
 
 <script>
@@ -27,21 +43,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    async function reg() {
-        const n = document.getElementById("name").value;
-        const ph = document.getElementById("phone").value;
-        const pw = document.getElementById("pass").value;
+    async function register() {
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const pass = document.getElementById("pass").value.trim();
+        const agent = document.getElementById("agentCode").value.trim() || "DIRECT"; // Agar code na ho toh DIRECT
 
-        if(!n || !ph || !pw) return alert("All fields required!");
+        if(!name || !phone || !pass) return alert("Bhai saari details bharo!");
 
-        const check = await db.collection("users").where("phone", "==", ph).get();
-        if(!check.empty) return alert("Bhai ye number pehle se register hai!");
+        // Check agar number pehle se hai
+        const check = await db.collection("users").where("phone", "==", phone).get();
+        if(!check.empty) return alert("Ye number pehle se register hai!");
 
+        // Firebase mein entry
         await db.collection("users").add({
-            name: n, phone: ph, password: pw, wallet: 0, status: "active"
+            name: name,
+            phone: phone,
+            password: pass,
+            agentId: agent, // Ye user ko Agent se jod dega
+            wallet: 0,
+            status: "active",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Account Created! Now Login.");
-        window.location.href = "login.html";
+
+        alert("Account Ban Gaya! Ab Login Karein.");
+        window.location.href = "login_user.html";
     }
 </script>
 </body>
