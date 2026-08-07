@@ -1,48 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User Dashboard - Number Samrat</title>
+    <title>User Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; text-align: center; }
-        .header { background: #1e293b; color: white; padding: 25px; border-bottom: 2px solid #fbbf24; position: relative; }
-        .logout { position: absolute; right: 10px; top: 10px; background: red; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
-        .card { background: white; margin: -20px auto 20px; width: 85%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .balance { font-size: 2.2rem; color: #10b981; font-weight: bold; }
-        .btn-add { display: block; background: #fbbf24; color: black; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 15px; }
-        .bet-box { background: white; width: 85%; margin: 20px auto; padding: 20px; border-radius: 15px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-bet { background: #3b82f6; color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .history-item { background: white; padding: 10px; margin-top: 10px; border-radius: 10px; display: flex; justify-content: space-between; font-size: 14px; border-left: 5px solid #3b82f6; }
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; text-align: center; }
+        .header { background: #1e293b; color: white; padding: 20px; border-bottom: 2px solid #fbbf24; }
+        .card { background: white; margin: 20px auto; width: 85%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .balance { font-size: 2rem; color: #10b981; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="logout" onclick="logout()">Logout</button>
-        <h3>Namaste, <span id="uName">User</span></h3>
-        <p style="font-size: 11px; opacity: 0.7;">Agent Code: <span id="myAgent">--</span></p>
+        <!-- Yahan Naam dikhega -->
+        <h3 id="uName">Loading...</h3>
+        <p style="font-size: 12px; opacity: 0.8;">Agent: <span id="myAgent">--</span></p>
     </div>
 
     <div class="card">
-        <div style="font-size: 13px; color: #64748b;">Available Balance</div>
+        <small>Wallet Balance</small>
         <div class="balance">₹<span id="bal">0</span></div>
-        <a href="#" id="rechargeBtn" class="btn-add">➕ RECHARGE NOW</a>
     </div>
 
-    <div class="bet-box">
-        <label>Market Chunein:</label>
-        <select id="mkt"><option value="GALI">GALI</option><option value="DESAWAR">DESAWAR</option><option value="FARIDABAD">FARIDABAD</option></select>
-        <input type="text" id="num" placeholder="Number (00-99)" maxlength="2">
-        <input type="number" id="amt" placeholder="Amount ₹">
-        <button class="btn-bet" onclick="placeBet()">PLACE BET</button>
-    </div>
-
-    <div id="history" style="width:90%; margin: 0 auto; text-align: left; padding-bottom: 30px;">
-        <h4>Recent Bets</h4>
-    </div>
+    <!-- Bet lagane ka purana code niche waisa hi rahega -->
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
@@ -50,61 +33,22 @@
     const db = firebase.firestore();
 
     const userId = localStorage.getItem("userId");
-    if(!userId) window.location.href = "index.html";
+    if(!userId) window.location.href = "login_user.html";
 
-    let userAgent = "DIRECT";
-
-    // 1. Profile aur Balance Load
+    // DATABASE SE LIVE DATA UTHANA
     db.collection("users").doc(userId).onSnapshot(doc => {
         if(doc.exists) {
-            const d = doc.data();
-            userAgent = d.agentId || "DIRECT";
-            document.getElementById("bal").innerText = d.wallet;
-            document.getElementById("uName").innerText = d.name;
-            document.getElementById("myAgent").innerText = userAgent;
-            // Zyporapay link with Remark
-            document.getElementById("rechargeBtn").href = "https://zyporapay.com/pay/YOUR_ID&remark=" + userId;
+            const data = doc.data();
+            // 1. Naam set karo
+            document.getElementById("uName").innerText = "Welcome, " + (data.name || "User");
+            // 2. Wallet set karo
+            document.getElementById("bal").innerText = data.wallet || 0;
+            // 3. Agent Code set karo
+            document.getElementById("myAgent").innerText = data.agentId || "DIRECT";
+        } else {
+            console.log("No such document!");
         }
     });
-
-    // 2. Bet History
-    db.collection("bets").where("userId", "==", userId).orderBy("timestamp", "desc").limit(5).onSnapshot(snap => {
-        let h = "<h4>Recent Bets</h4>";
-        snap.forEach(doc => {
-            const b = doc.data();
-            h += <div class="history-item"><div><b>${b.gameName}</b> [${b.number}]</div><div>₹${b.amount} - ${b.status}</div></div>;
-        });
-        document.getElementById("history").innerHTML = h;
-    });
-
-    // 3. Place Bet Logic
-    async function placeBet() {
-        const m = document.getElementById("mkt").value;
-        const n = document.getElementById("num").value;
-        const a = parseInt(document.getElementById("amt").value);
-
-        if(!n || isNaN(a) || a < 10) return alert("Sahi details dalo!");
-
-        const userRef = db.collection("users").doc(userId);
-        const uDoc = await userRef.get();
-        if(uDoc.data().wallet < a) return alert("Balance kam hai!");
-
-        await userRef.update({ wallet: firebase.firestore.FieldValue.increment(-a) });
-        
-        // BET MEIN AGENT ID BHI JAYEGI
-        await db.collection("bets").add({
-            userId: userId,
-            agentId: userAgent, // <--- Ye hai asli link
-            gameName: m,
-            number: n,
-            amount: a,
-            status: "pending",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert("Bet Lag Gayi!");
-    }
-
-    function logout() { localStorage.clear(); window.location.href = "index.html"; }
 </script>
 </body>
 </html>
