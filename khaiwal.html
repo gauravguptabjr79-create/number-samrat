@@ -7,155 +7,100 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0a0f1e; color: white; margin: 0; padding: 0; }
-        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; }
+        body { font-family: sans-serif; background: #0a0f1e; color: white; margin: 0; padding: 0; }
+        .header { background: #1e293b; padding: 20px; border-bottom: 2px solid #fbbf24; text-align: center; position: relative; }
+        .logout-btn { position: absolute; right: 10px; top: 20px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
         .container { padding: 15px; max-width: 800px; margin: 0 auto; }
-        
-        /* STATS CARDS */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .stat-card h3 { margin: 0; font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; }
+        .stat-card { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; }
         .stat-card p { margin: 5px 0 0; font-size: 1.5rem; font-weight: bold; color: #fbbf24; }
-
-        /* LOAD TABLE */
         .load-section { background: #1e293b; border-radius: 20px; padding: 20px; margin-bottom: 30px; }
-        .load-section h2 { margin-top: 0; font-size: 1.2rem; color: #fbbf24; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: #94a3b8; font-size: 0.9rem; padding: 10px; }
-        td { padding: 12px 10px; border-bottom: 1px solid #334155; }
-        .market-badge { background: #3b82f6; padding: 3px 8px; border-radius: 5px; font-size: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #334155; text-align: center; }
         .num-badge { background: #fbbf24; color: black; padding: 3px 10px; border-radius: 50px; font-weight: bold; }
-        .amount-text { color: #10b981; font-weight: bold; }
-
-        /* MANUAL CONTROL */
-        .manual-settle { background: #0f172a; padding: 20px; border-radius: 15px; border: 1px dashed #475569; }
-        .manual-settle input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 80px; margin: 5px; }
-        .btn-settle { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-settle { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 70px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <div class="header">
+        <button class="logout-btn" onclick="logout()">Logout</button>
         <h2 style="margin:0;">KHAIWAL PANEL 👑</h2>
-        <small style="color: #94a3b8;">Number Samrat Management System</small>
     </div>
 
     <div class="container">
-        <!-- Dashboard Stats -->
         <div class="stat-grid">
-            <div class="stat-card">
-                <h3>Total Collection</h3>
-                <p id="totalBalance">₹0</p>
-            </div>
-            <div class="stat-card">
-                <h3>Active Bets</h3>
-                <p id="pendingCount">0</p>
-            </div>
+            <div class="stat-card"><h3>Collection</h3><p id="totalBalance">₹0</p></div>
+            <div class="stat-card"><h3>Active Bets</h3><p id="pendingCount">0</p></div>
         </div>
 
-        <!-- Live Load Management -->
         <div class="load-section">
-            <h2>Live Market Load (Risky Numbers)</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Market</th>
-                            <th>Number</th>
-                            <th>Total Load</th>
-                        </tr>
-                    </thead>
-                    <tbody id="load-list">
-                        <!-- Automatic grouping will happen here -->
-                    </tbody>
-                </table>
-            </div>
+            <h2>Live Load (Market-wise)</h2>
+            <table>
+                <thead><tr><th>Market</th><th>No.</th><th>Load</th></tr></thead>
+                <tbody id="load-list"></tbody>
+            </table>
         </div>
 
-        <!-- Emergency Manual Settle -->
-        <div class="manual-settle">
-            <h3 style="margin-top:0; font-size:1rem; color:#ef4444;">Manual Settle (Backup)</h3>
-            <p style="font-size: 11px; color:#94a3b8;">Agar robot fail ho, toh yahan se result dalkar settle karein.</p>
+        <div style="background: #0f172a; padding: 20px; border-radius: 15px; border: 1px dashed #475569;">
+            <h3 style="color:#ef4444;">Manual Settle</h3>
             <input type="text" id="m-market" placeholder="GALI">
             <input type="text" id="m-num" placeholder="00" maxlength="2">
-            <button class="btn-settle" onclick="emergencySettle()">SETTLE ALL NOW</button>
+            <button class="btn-settle" onclick="emergencySettle()">SETTLE NOW</button>
         </div>
     </div>
 
     <script>
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 1. Load Collection Stats
-        db.collection("khaiwal").doc("stats").onSnapshot(doc => {
-            if(doc.exists) {
-                document.getElementById("totalBalance").innerText = "₹" + doc.data().totalBalance;
-            }
-        });
+        // --- SECURITY CHECK ---
+        const userId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
+        if (!userId || role !== "admin") { window.location.href = "login.html"; }
 
-        // 2. Load Live Bets & Calculate Grouped Load
+        db.collection("khaiwal").doc("stats").onSnapshot(doc => { if(doc.exists) document.getElementById("totalBalance").innerText = "₹" + doc.data().totalBalance; });
+
         db.collection("bets").where("status", "==", "pending").onSnapshot(snap => {
             document.getElementById("pendingCount").innerText = snap.size;
-            
-            let groupedData = {}; // Format: { "GALI-75": 500 }
-
+            let grouped = {};
             snap.forEach(doc => {
                 const b = doc.data();
                 const key = b.gameName + "-" + b.number;
-                groupedData[key] = (groupedData[key] || 0) + b.amount;
+                grouped[key] = (grouped[key] || 0) + b.amount;
             });
-
-            // Convert to list and sort (Highest load first)
-            let sortedLoad = Object.keys(groupedData).map(key => {
-                return { market: key.split("-")[0], num: key.split("-")[1], total: groupedData[key] };
-            }).sort((a, b) => b.total - a.total);
-
             let html = "";
-            sortedLoad.forEach(item => {
-                html += `<tr>
-                    <td><span class="market-badge">${item.market}</span></td>
-                    <td><span class="num-badge">${item.num}</span></td>
-                    <td><span class="amount-text">₹${item.total}</span></td>
-                </tr>`;
-            });
-
-            document.getElementById("load-list").innerHTML = html || "<tr><td colspan='3'>No active bets</td></tr>";
+            for(let k in grouped) {
+                const [m, n] = k.split("-");
+                html += <tr><td>${m}</td><td><span class="num-badge">${n}</span></td><td>₹${grouped[k]}</td></tr>;
+            }
+            document.getElementById("load-list").innerHTML = html || "<tr><td colspan='3'>No bets</td></tr>";
         });
 
-        // 3. Emergency Settlement (Same logic as robot)
         async function emergencySettle() {
-            const market = document.getElementById("m-market").value.toUpperCase();
-            const winNo = document.getElementById("m-num").value.trim();
-
-            if(!market || !winNo) return alert("Bhai details dalo!");
-            if(!confirm("Are you sure? Isse sabka wallet update ho jayega!")) return;
-
-            const snapshot = await db.collection("bets").where("gameName", "==", market).where("status", "==", "pending").get();
-            if(snapshot.empty) return alert("Is market ki koi pending bets nahi mili.");
-
+            const m = document.getElementById("m-market").value.toUpperCase();
+            const n = document.getElementById("m-num").value.trim();
+            if(!m || !n) return alert("Details dalo!");
+            const snap = await db.collection("bets").where("gameName","==",m).where("status","==","pending").get();
+            if(snap.empty) return alert("No bets found.");
             const batch = db.batch();
-            snapshot.forEach(doc => {
+            snap.forEach(doc => {
                 const b = doc.data();
-                const uRef = db.collection("users").doc(b.userId);
-                const sRef = db.collection("khaiwal").doc("stats");
                 const amt = parseInt(b.amount);
-
-                if (b.number === winNo) {
-                    batch.update(uRef, { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
-                    batch.update(sRef, { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
+                if (b.number === n) {
+                    batch.update(db.collection("users").doc(b.userId), { wallet: firebase.firestore.FieldValue.increment(amt * 90) });
+                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(-(amt * 90)) });
                     batch.update(doc.ref, { status: "win" });
                 } else {
-                    batch.update(sRef, { totalBalance: firebase.firestore.FieldValue.increment(amt) });
+                    batch.update(db.collection("khaiwal").doc("stats"), { totalBalance: firebase.firestore.FieldValue.increment(amt) });
                     batch.update(doc.ref, { status: "loss" });
                 }
             });
-
-            await batch.commit();
-            alert("Mubarak ho! Sabka wallet settle ho gaya.");
+            await batch.commit(); alert("Settle Done!");
         }
+        function logout() { localStorage.clear(); window.location.href = "login.html"; }
     </script>
 </body>
 </html>
