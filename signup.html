@@ -1,65 +1,45 @@
-[12:12, 07/08/2026] Gaurav Jio Second JIO SECOND: <!DOCTYPE html>
-<html>
-<head>
-    <title>Agent Dashboard - Number Samrat</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #0a0f1e; color: white; padding: 20px; text-align: center; }
-        .header { background: #1e293b; padding: 15px; border-bottom: 2px solid #fbbf24; margin-bottom: 20px; }
-        .stat-box { background: #1a202c; padding: 20px; border-radius: 15px; border-left: 5px solid #fbbf24; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #1e293b; }
-        th, td { padding: 12px; border: 1px solid #334155; }
-  …
-[12:18, 07/08/2026] Gaurav Jio Second JIO SECOND: <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Signup - Number Samrat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 90%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    </style>
 </head>
-<body>
-<div class="card">
-    <h2>📝 New User</h2>
-    <input type="text" id="name" placeholder="Apna Naam">
-    <input type="text" id="phone" placeholder="Mobile Number">
-    <input type="password" id="pass" placeholder="Password">
-    <input type="text" id="agent" placeholder="Agent Code (Optional)">
-    <button onclick="register()">Create Account</button>
-</div>
+<body style="font-family: sans-serif; text-align: center; background: #f0f2f5; padding-top: 50px;">
+    <div style="background: white; padding: 30px; border-radius: 15px; display: inline-block; width: 85%; max-width: 350px;">
+        <h2>Naya Account</h2>
+        <input type="text" id="n" placeholder="Naam" style="width:100%; padding:10px; margin:5px 0;">
+        <input type="text" id="p" placeholder="Phone Number" style="width:100%; padding:10px; margin:5px 0;">
+        <input type="password" id="pw" placeholder="Password" style="width:100%; padding:10px; margin:5px 0;">
+        <input type="text" id="ag" placeholder="Agent Code (Phone No)" style="width:100%; padding:10px; margin:5px 0;">
+        <button onclick="register()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:5px; margin-top:10px; font-weight:bold;">CREATE ACCOUNT</button>
+    </div>
 
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyD_Da_doRKedyGEVjZemzP9Gq6VIPfokhw", authDomain: "number-samrat.firebaseapp.com", projectId: "number-samrat", storageBucket: "number-samrat.firebasestorage.app", messagingSenderId: "154722781783", appId: "1:154722781783:web:7b6136cec1c34a11b3f112" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    async function register() {
-        const n = document.getElementById("name").value.trim();
-        const p = document.getElementById("phone").value.trim();
-        const pw = document.getElementById("pass").value.trim();
-        const a = document.getElementById("agent").value.trim() || "DIRECT";
+        async function register() {
+            const name = document.getElementById("n").value;
+            const phone = document.getElementById("p").value;
+            const pass = document.getElementById("pw").value;
+            const agent = document.getElementById("ag").value || "DIRECT";
 
-        if(!n || !p || !pw) return alert("Bhai saari details bharo!");
+            if(!name || !phone || !pass) return alert("Sab bhariye!");
 
-        await db.collection("users").add({
-            name: n,
-            phone: p,
-            password: pw,
-            agentId: a, // <--- Ye "agentId" ke naam se save ho raha hai
-            wallet: 0,
-            status: "active"
-        });
-
-        alert("Account Ban Gaya! Ab Login Karein.");
-        window.location.href = "login_user.html";
-    }
-</script>
+            await db.collection("users").add({
+                name: name,
+                phone: phone,
+                password: pass,
+                agentId: agent, // <--- Iska naam dhyan rakna
+                wallet: 0,
+                status: "active"
+            });
+            alert("Account Ban Gaya! Login Karein.");
+            window.location.href = "login_user.html";
+        }
+    </script>
 </body>
 </html>
